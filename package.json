@@ -1,8 +1,8 @@
 {
-  "name": "nanobanana-extension",
-  "version": "1.0.0",
+  "name": "nanobanana-mcp",
+  "version": "1.0.1",
   "type": "module",
-  "description": "Gemini & Codex CLI extension for Nano Banana using the OpenRouter google/gemini-2.5-flash-image model",
+  "description": "MCP server for Nano Banana image generation (OpenRouter by default, configurable provider)",
   "scripts": {
     "build": "cd mcp-server && npm run build",
     "install-deps": "cd mcp-server && npm install",
