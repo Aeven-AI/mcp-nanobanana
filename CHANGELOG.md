@@ -1,7 +1,6 @@
 ## 1.0.4
 
 - Fix noisy tool registration debug logging in the Nano Banana MCP server.
-- Bump package version to 1.0.4.
 
 ## 1.0.3
 
