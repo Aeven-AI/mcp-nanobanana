@@ -15,7 +15,7 @@ A professional MCP extension for Gemini CLI, Codex CLI, and other MCP-compatible
 2. **Node.js 20+** and npm
 3. **API Key**: Set `MODEL_API_KEY` (obtainable from OpenRouter or any provider that exposes the Nano Banana / `google/gemini-2.5-flash-image` model)
 
-Optional overrides (useful when targeting providers other than OpenRouter):
+By default the extension talks to OpenRouter. Optional overrides (useful when targeting other providers that host the model):
 
 - `MODEL_BASE_URL` – alternate provider endpoint (default: `https://openrouter.ai/api/v1`)
 - `MODEL_ID` – override model id (default: `google/gemini-2.5-flash-image`)
@@ -423,9 +423,14 @@ cd mcp-server && npm run dev
 cd mcp-server && npm test
 ```
 
+> **Test setup:** Ensure `mcp-server/.env` exists with a line `MODEL_API_KEY=<your key>` before running `npm test`.
+
 The suite generates:
 - A watercolor fox scene
-- An edited version of that scene
+- An edited and restored version of that scene
+- A two-step story sequence
+- A geometric seamless pattern
+- A user login flowchart
 - A coffee cup app icon
 
 Images are saved in `mcp-server/nanobanana-output/` for inspection (they are not deleted).
