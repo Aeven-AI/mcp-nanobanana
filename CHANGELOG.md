@@ -1,3 +1,7 @@
+## 1.0.3
+
+- Document single-command Codex CLI setup using `npx @aeven/nanobanana-mcp` with inline `MODEL_API_KEY`.
+
 ## 1.0.2
 
 - Add CLI binary entry point so `npx @aeven/nanobanana-mcp` launches the MCP server.

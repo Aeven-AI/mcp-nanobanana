@@ -1,6 +1,6 @@
-# Nano Banana - Gemini & Codex CLI Extension
+# Nano Banana - MCP Image Generation Extension
 
-A professional MCP extension for Gemini CLI, Codex CLI, and other MCP-compatible tools, generating and manipulating images using the **google/gemini-2.5-flash-image** model. By default it talks to OpenRouter, but you can point it at any provider that hosts Nano Banana by adjusting the `MODEL_*` environment variables.
+A professional MCP (Model Context Protocol) extension for any MCP-compatible client (including Gemini CLI and Codex CLI), for generating and manipulating images. It uses the **google/gemini-2.5-flash-image** model by default, and is pre-configured to connect to OpenRouter. You can point it at any provider that hosts the model by adjusting the `MODEL_*` environment variables.
 
 ## ✨ Features
 
@@ -11,55 +11,77 @@ A professional MCP extension for Gemini CLI, Codex CLI, and other MCP-compatible
 
 ## 📋 Prerequisites
 
-1. **MCP-compatible CLI** installed and configured (Gemini CLI, Codex CLI, etc.)
+1. **MCP-compatible CLI** installed and configured (e.g., Gemini CLI, Codex CLI)
 2. **Node.js 20+** and npm
-3. **API Key**: Set `MODEL_API_KEY` (obtainable from OpenRouter or any provider that exposes the Nano Banana / `google/gemini-2.5-flash-image` model)
+3. **API Key**: Set `MODEL_API_KEY` (obtainable from OpenRouter or any provider that exposes the `google/gemini-2.5-flash-image` model)
 
-By default the extension talks to OpenRouter. Optional overrides (useful when targeting other providers that host the model):
+By default, the extension talks to OpenRouter. Optional overrides are useful when targeting other providers that host the model:
 
 - `MODEL_BASE_URL` – alternate provider endpoint (default: `https://openrouter.ai/api/v1`)
 - `MODEL_ID` – override model id (default: `google/gemini-2.5-flash-image`)
 - `MODEL_REFERER` / `MODEL_TITLE` – analytics headers for providers that require them
 - `MODEL_GENERATE_PATH` – alternate generation endpoint path (default: `/responses`)
 
-If you are using OpenRouter, refer to their [authentication guide](https://openrouter.ai/docs#authenticate) for generating API keys. For other providers that host the same model, consult their documentation for equivalent credentials.
-
-### Key Components
-
-- **`index.ts`**: MCP server using `@modelcontextprotocol/sdk` for professional protocol handling
-- **`imageGenerator.ts`**: Handles all OpenRouter API interactions and response processing
-- **`fileHandler.ts`**: Manages file I/O, smart filename generation, and file searching
-- **`types.ts`**: Shared TypeScript interfaces for type safety
+If you are using OpenRouter, refer to their [authentication guide](https://openrouter.ai/docs#authenticate) for generating API keys. For other providers, consult their documentation.
 
 ## 🚀 Installation
 
-### 1. Install Extension (Gemini CLI)
+### From NPM (Recommended)
 
-Install the extension using the `gemini extensions install` command:
+For most users, installing via `npx` or your CLI's extension manager is the easiest method.
 
+**Gemini CLI:**
 ```bash
 gemini extensions install https://github.com/gemini-cli-extensions/nanobanana
 ```
 
-### 1b. Register with Codex CLI
+**Codex CLI:**
 
-Add the MCP server to your Codex CLI configuration (default path: `~/.config/codex/mcp.json`):
+The `npx` command will download and run the latest version without a local clone:
+```bash
+MODEL_API_KEY="sk-..." codex mcp add nanobanana -- npx -y @aeven/nanobanana-mcp
+```
+
+### For Local Development
+
+If you have cloned this repository to work on the code, you can register your local version.
+
+**1. Build the server:**
+```bash
+npm run build
+```
+
+**2. Register with your CLI:**
+
+*For Codex CLI:*
+```bash
+codex mcp add node "$(pwd)/mcp-server/dist/index.js" nanobanana
+```
+*On Windows PowerShell:*
+```powershell
+codex mcp add node "$((Get-Location).Path)\mcp-server\dist\index.js" nanobanana
+```
+
+*For other CLIs, adapt the path to your client's configuration file.*
+
+### Manual Registration
+
+You can also register the server by manually editing your CLI's configuration file (e.g., `~/.config/codex/mcp.json` for Codex CLI):
 
 ```json
 {
   "servers": {
     "nanobanana": {
       "command": "node",
-      "args": ["/path/to/nanobanana/mcp-server/dist/index.js"],
+      "args": ["/path/to/your/nanobanana/mcp-server/dist/index.js"],
       "env": {}
     }
   }
 }
 ```
+Restart your CLI after updating the configuration.
 
-Restart Codex CLI after updating the configuration. Adjust the path to match your local checkout.
-
-### 2. Activate
+### Activate
 
 Restart your MCP CLI (Gemini CLI, Codex CLI, etc.). The following commands will be available:
 
@@ -81,91 +103,48 @@ The extension provides multiple command options for different use cases:
 ### 🎯 Specific Commands (Recommended)
 
 **Generate Images:**
-
 ```bash
 # Single image
 /generate "a watercolor painting of a fox in a snowy forest"
 
 # Multiple variations with preview
 /generate "sunset over mountains" --count=3 --preview
-
-# Style variations
-/generate "mountain landscape" --styles="watercolor,oil-painting" --count=4
-
-# Specific variations with auto-preview
-/generate "coffee shop interior" --variations="lighting,mood" --preview
 ```
 
 **Edit Images:**
-
 ```bash
 /edit my_photo.png "add sunglasses to the person"
 /edit portrait.jpg "change background to a beach scene" --preview
 ```
 
 **Restore Images:**
-
 ```bash
 /restore old_family_photo.jpg "remove scratches and improve clarity"
-/restore damaged_photo.png "enhance colors and fix tears" --preview
 ```
 
 **Generate Icons:**
-
 ```bash
-# App icon in multiple sizes
 /icon "coffee cup logo" --sizes="64,128,256" --type="app-icon" --preview
-
-# Favicon set
-/icon "company logo" --type="favicon" --sizes="16,32,64"
-
-# UI elements
-/icon "settings gear icon" --type="ui-element" --style="minimal"
 ```
 
 **Create Patterns:**
-
 ```bash
-# Seamless pattern
 /pattern "geometric triangles" --type="seamless" --style="geometric" --preview
-
-# Background texture
-/pattern "wood grain texture" --type="texture" --colors="mono"
-
-# Wallpaper pattern
-/pattern "floral design" --type="wallpaper" --density="sparse"
 ```
 
 **Generate Stories:**
-
 ```bash
-# Visual story sequence
 /story "a seed growing into a tree" --steps=4 --type="process" --preview
-
-# Step-by-step tutorial
-/story "how to make coffee" --steps=6 --type="tutorial"
-
-# Timeline visualization
-/story "evolution of smartphones" --steps=5 --type="timeline"
 ```
 
 **Create Diagrams:**
-
 ```bash
-# System flowchart
 /diagram "user login process" --type="flowchart" --style="professional" --preview
-
-# Architecture diagram
-/diagram "microservices architecture" --type="architecture" --complexity="detailed"
-
-# Database schema
-/diagram "e-commerce database design" --type="database" --layout="hierarchical"
 ```
 
 ### 🌟 Natural Language Command (Flexible)
 
 **Open-ended prompts:**
-
 ```bash
 /nanobanana create a logo for my tech startup
 /nanobanana I need 5 different versions of a cat illustration in various art styles
@@ -176,7 +155,8 @@ The extension provides multiple command options for different use cases:
 
 The `/generate` command supports advanced options for creating multiple variations with different styles and parameters.
 
-### Generation Options
+<details>
+<summary>Generation Options</summary>
 
 **`--count=N`** - Number of variations (1-8, default: 1)
 **`--styles="style1,style2"`** - Comma-separated artistic styles
@@ -184,8 +164,10 @@ The `/generate` command supports advanced options for creating multiple variatio
 **`--format=grid|separate`** - Output format (default: separate)
 **`--seed=123`** - Seed for reproducible variations
 **`--preview`** - Automatically open generated images in default viewer
+</details>
 
-### Available Styles
+<details>
+<summary>Available Styles</summary>
 
 - `photorealistic` - Photographic quality images
 - `watercolor` - Watercolor painting style
@@ -197,8 +179,10 @@ The `/generate` command supports advanced options for creating multiple variatio
 - `modern` - Contemporary/modern style
 - `abstract` - Abstract art style
 - `minimalist` - Clean, minimal design
+</details>
 
-### Available Variations
+<details>
+<summary>Available Variations</summary>
 
 - `lighting` - Different lighting conditions (dramatic, soft)
 - `angle` - Various viewing angles (above, close-up)
@@ -207,42 +191,28 @@ The `/generate` command supports advanced options for creating multiple variatio
 - `mood` - Various emotional tones (cheerful, dramatic)
 - `season` - Different seasons (spring, winter)
 - `time-of-day` - Different times (sunrise, sunset)
+</details>
 
 ### Advanced Examples
 
 **Style Variations:**
-
 ```bash
 /generate "mountain landscape" --styles="watercolor,oil-painting,sketch,photorealistic"
 # Creates the same mountain scene in 4 different artistic styles
 ```
 
 **Multiple Variations:**
-
 ```bash
 /generate "cozy coffee shop" --variations="lighting,mood" --count=4
 # Generates: dramatic lighting, soft lighting, cheerful mood, dramatic mood versions
-```
-
-**Combined Options:**
-
-```bash
-/generate "friendly robot character" --styles="anime,minimalist" --variations="color-palette"
-# Creates anime and minimalist versions with different color palettes
-```
-
-**Simple Multiple Generation:**
-
-```bash
-/generate "tech startup logo" --count=6
-# Generates 6 different interpretations of the same prompt
 ```
 
 ## 🎯 Icon Generation
 
 The `/icon` command specializes in creating app icons, favicons, and UI elements with proper sizing and formatting.
 
-### Icon Options
+<details>
+<summary>Icon Options</summary>
 
 **`--sizes="16,32,64"`** - Array of icon sizes in pixels (common: 16, 32, 64, 128, 256, 512, 1024)
 **`--type="app-icon|favicon|ui-element"`** - Icon type (default: app-icon)
@@ -250,25 +220,23 @@ The `/icon` command specializes in creating app icons, favicons, and UI elements
 **`--format="png|jpeg"`** - Output format (default: png)
 **`--background="transparent|white|black|color"`** - Background type (default: transparent)
 **`--corners="rounded|sharp"`** - Corner style for app icons (default: rounded)
+</details>
 
 ### Icon Examples
-
 ```bash
 # Complete app icon set
 /icon "productivity app with checklist" --sizes="64,128,256,512" --corners="rounded"
 
 # Website favicon package
 /icon "mountain logo" --type="favicon" --sizes="16,32,64" --format="png"
-
-# UI element set
-/icon "notification bell" --type="ui-element" --style="flat" --background="transparent"
 ```
 
 ## 🎨 Pattern & Texture Generation
 
 The `/pattern` command creates seamless patterns and textures perfect for backgrounds and design elements.
 
-### Pattern Options
+<details>
+<summary>Pattern Options</summary>
 
 **`--size="256x256"`** - Pattern tile size (common: 128x128, 256x256, 512x512)
 **`--type="seamless|texture|wallpaper"`** - Pattern type (default: seamless)
@@ -276,25 +244,23 @@ The `/pattern` command creates seamless patterns and textures perfect for backgr
 **`--density="sparse|medium|dense"`** - Element density (default: medium)
 **`--colors="mono|duotone|colorful"`** - Color scheme (default: colorful)
 **`--repeat="tile|mirror"`** - Tiling method for seamless patterns (default: tile)
+</details>
 
 ### Pattern Examples
-
 ```bash
 # Website background pattern
 /pattern "subtle geometric hexagons" --type="seamless" --colors="duotone" --density="sparse"
 
 # Material texture
 /pattern "brushed metal surface" --type="texture" --style="tech" --colors="mono"
-
-# Decorative wallpaper
-/pattern "art deco design" --type="wallpaper" --style="geometric" --size="512x512"
 ```
 
 ## 📖 Visual Storytelling
 
 The `/story` command generates sequential images that tell a visual story or demonstrate a step-by-step process.
 
-### Story Options
+<details>
+<summary>Story Options</summary>
 
 **`--steps=N`** - Number of sequential images (2-8, default: 4)
 **`--type="story|process|tutorial|timeline"`** - Sequence type (default: story)
@@ -302,25 +268,23 @@ The `/story` command generates sequential images that tell a visual story or dem
 **`--layout="separate|grid|comic"`** - Output layout (default: separate)
 **`--transition="smooth|dramatic|fade"`** - Transition style between steps (default: smooth)
 **`--format="storyboard|individual"`** - Output format (default: individual)
+</details>
 
 ### Story Examples
-
 ```bash
 # Product development process
 /story "idea to launched product" --steps=5 --type="process" --style="consistent"
 
 # Educational tutorial
 /story "git workflow tutorial" --steps=6 --type="tutorial" --layout="comic"
-
-# Brand evolution timeline
-/story "company logo evolution" --steps=4 --type="timeline" --transition="smooth"
 ```
 
 ## 📊 Technical Diagrams
 
 The `/diagram` command generates professional technical diagrams, flowcharts, and architectural mockups from simple text descriptions.
 
-### Diagram Options
+<details>
+<summary>Diagram Options</summary>
 
 **`--type="flowchart|architecture|network|database|wireframe|mindmap|sequence"`** - Diagram type (default: flowchart)
 **`--style="professional|clean|hand-drawn|technical"`** - Visual style (default: professional)
@@ -328,6 +292,7 @@ The `/diagram` command generates professional technical diagrams, flowcharts, an
 **`--complexity="simple|detailed|comprehensive"`** - Level of detail (default: detailed)
 **`--colors="mono|accent|categorical"`** - Color scheme (default: accent)
 **`--annotations="minimal|detailed"`** - Label and annotation level (default: detailed)
+</details>
 
 ### Diagram Types & Use Cases
 
@@ -340,19 +305,12 @@ The `/diagram` command generates professional technical diagrams, flowcharts, an
 - **sequence**: Sequence diagrams, API interactions
 
 ### Diagram Examples
-
 ```bash
 # Development workflow
 /diagram "CI/CD pipeline with testing stages" --type="flowchart" --complexity="detailed"
 
 # System design
 /diagram "chat application architecture" --type="architecture" --style="technical"
-
-# API documentation
-/diagram "REST API authentication flow" --type="sequence" --layout="vertical"
-
-# Database design
-/diagram "social media database schema" --type="database" --annotations="detailed"
 ```
 
 ## 📁 File Management
@@ -436,6 +394,13 @@ The suite generates:
 Images are saved in `mcp-server/nanobanana-output/` for inspection (they are not deleted).
 
 ## 🔧 Technical Details
+
+### Key Components
+
+- **`index.ts`**: MCP server using `@modelcontextprotocol/sdk` for professional protocol handling
+- **`imageGenerator.ts`**: Handles all OpenRouter API interactions and response processing
+- **`fileHandler.ts`**: Manages file I/O, smart filename generation, and file searching
+- **`types.ts`**: Shared TypeScript interfaces for type safety
 
 ### MCP Server Protocol
 
