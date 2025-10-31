@@ -1,3 +1,8 @@
+## 1.0.4
+
+- Fix noisy tool registration debug logging in the Nano Banana MCP server.
+- Bump package version to 1.0.4.
+
 ## 1.0.3
 
 - Document single-command Codex CLI setup using `npx @aeven/nanobanana-mcp` with inline `MODEL_API_KEY`.

@@ -409,7 +409,6 @@ class NanoBananaServer {
           },
         },
       ];
-      console.log('Registered tools:', JSON.stringify(tools, null, 2));
       return {
         tools,
       };
