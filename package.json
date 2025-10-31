@@ -1,8 +1,23 @@
 {
   "name": "@aeven/nanobanana-mcp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "MCP server for Nano Banana image generation (OpenRouter by default, configurable provider)",
+  "bin": {
+    "nanobanana-mcp": "mcp-server/dist/index.js"
+  },
+  "files": [
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "GEMINI.md",
+    "LICENSE",
+    "README.md",
+    "SECURITY.md",
+    "commands",
+    "docs",
+    "gemini-extension.json",
+    "mcp-server/dist"
+  ],
   "scripts": {
     "build": "cd mcp-server && npm run build",
     "install-deps": "cd mcp-server && npm install",
