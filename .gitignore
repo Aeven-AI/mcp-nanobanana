@@ -1,4 +1,5 @@
 dist/
+!mcp-server/dist/
 node_modules/
 nanobanana-output/
 mcp-server/.env

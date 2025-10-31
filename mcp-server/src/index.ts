@@ -52,351 +52,366 @@ class NanoBananaServer {
 
   private setupToolHandlers() {
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+      const tools = [
+                  {
+                    name: 'hello',
+                    description: 'A simple hello world tool',
+                    inputSchema: {
+                      type: 'object',
+                      properties: {
+                        name: {
+                          type: 'string',
+                          description: 'The name to say hello to',
+                        },
+                      },
+                      required: ['name'],
+                    },
+                  },
+                  {
+                    name: 'generate_image',          description:
+            'Generate single or multiple images from text prompts with style and variation options',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              prompt: {
+                type: 'string',
+                description:
+                  'The text prompt describing the image to generate',
+              },
+              outputCount: {
+                type: 'number',
+                description:
+                  'Number of variations to generate (1-8, default: 1)',
+                minimum: 1,
+                maximum: 8,
+                default: 1,
+              },
+              styles: {
+                type: 'array',
+                items: { type: 'string' },
+                description:
+                  'Array of artistic styles: photorealistic, watercolor, oil-painting, sketch, pixel-art, anime, vintage, modern, abstract, minimalist',
+              },
+              variations: {
+                type: 'array',
+                items: { type: 'string' },
+                description:
+                  'Array of variation types: lighting, angle, color-palette, composition, mood, season, time-of-day',
+              },
+              format: {
+                type: 'string',
+                enum: ['grid', 'separate'],
+                description:
+                  'Output format: separate files or single grid image',
+                default: 'separate',
+              },
+              seed: {
+                type: 'number',
+                description: 'Seed for reproducible variations',
+              },
+              preview: {
+                type: 'boolean',
+                description:
+                  'Automatically open generated images in default viewer',
+                default: false,
+              },
+            },
+            required: ['prompt'],
+          },
+        },
+        {
+          name: 'edit_image',
+          description: 'Edit an existing image based on a text prompt',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              prompt: {
+                type: 'string',
+                description: 'The text prompt describing the edits to make',
+              },
+              file: {
+                type: 'string',
+                description: 'The filename of the input image to edit',
+              },
+              preview: {
+                type: 'boolean',
+                description:
+                  'Automatically open generated images in default viewer',
+                default: false,
+              },
+            },
+            required: ['prompt', 'file'],
+          },
+        },
+        {
+          name: 'restore_image',
+          description: 'Restore or enhance an existing image',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              prompt: {
+                type: 'string',
+                description:
+                  'The text prompt describing the restoration to perform',
+              },
+              file: {
+                type: 'string',
+                description: 'The filename of the input image to restore',
+              },
+              preview: {
+                type: 'boolean',
+                description:
+                  'Automatically open generated images in default viewer',
+                default: false,
+              },
+            },
+            required: ['prompt', 'file'],
+          },
+        },
+        {
+          name: 'generate_icon',
+          description:
+            'Generate app icons, favicons, and UI elements in multiple sizes and formats',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              prompt: {
+                type: 'string',
+                description:
+                  'Description of the icon or UI element to generate',
+              },
+              sizes: {
+                type: 'array',
+                items: { type: 'number' },
+                description:
+                  'Array of icon sizes in pixels (16, 32, 64, 128, 256, 512, 1024)',
+              },
+              type: {
+                type: 'string',
+                enum: ['app-icon', 'favicon', 'ui-element'],
+                description: 'Type of icon to generate',
+                default: 'app-icon',
+              },
+              style: {
+                type: 'string',
+                enum: ['flat', 'skeuomorphic', 'minimal', 'modern'],
+                description: 'Visual style of the icon',
+                default: 'modern',
+              },
+              format: {
+                type: 'string',
+                enum: ['png', 'jpeg'],
+                description: 'Output format',
+                default: 'png',
+              },
+              background: {
+                type: 'string',
+                description:
+                  'Background type: transparent, white, black, or color name',
+                default: 'transparent',
+              },
+              corners: {
+                type: 'string',
+                enum: ['rounded', 'sharp'],
+                description: 'Corner style for app icons',
+                default: 'rounded',
+              },
+              preview: {
+                type: 'boolean',
+                description:
+                  'Automatically open generated images in default viewer',
+                default: false,
+              },
+            },
+            required: ['prompt'],
+          },
+        },
+        {
+          name: 'generate_pattern',
+          description:
+            'Generate seamless patterns and textures for backgrounds and design elements',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              prompt: {
+                type: 'string',
+                description:
+                  'Description of the pattern or texture to generate',
+              },
+              size: {
+                type: 'string',
+                description: 'Pattern tile size (e.g., "256x256", "512x512")',
+                default: '256x256',
+              },
+              type: {
+                type: 'string',
+                enum: ['seamless', 'texture', 'wallpaper'],
+                description: 'Type of pattern to generate',
+                default: 'seamless',
+              },
+              style: {
+                type: 'string',
+                enum: ['geometric', 'organic', 'abstract', 'floral', 'tech'],
+                description: 'Pattern style',
+                default: 'abstract',
+              },
+              density: {
+                type: 'string',
+                enum: ['sparse', 'medium', 'dense'],
+                description: 'Element density in the pattern',
+                default: 'medium',
+              },
+              colors: {
+                type: 'string',
+                enum: ['mono', 'duotone', 'colorful'],
+                description: 'Color scheme',
+                default: 'colorful',
+              },
+              repeat: {
+                type: 'string',
+                enum: ['tile', 'mirror'],
+                description: 'Tiling method for seamless patterns',
+                default: 'tile',
+              },
+              preview: {
+                type: 'boolean',
+                description:
+                  'Automatically open generated images in default viewer',
+                default: false,
+              },
+            },
+            required: ['prompt'],
+          },
+        },
+        {
+          name: 'generate_story',
+          description:
+            'Generate a sequence of related images that tell a visual story or show a process',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              prompt: {
+                type: 'string',
+                description:
+                  'Description of the story or process to visualize',
+              },
+              steps: {
+                type: 'number',
+                description: 'Number of sequential images to generate (2-8)',
+                minimum: 2,
+                maximum: 8,
+                default: 4,
+              },
+              type: {
+                type: 'string',
+                enum: ['story', 'process', 'tutorial', 'timeline'],
+                description: 'Type of sequence to generate',
+                default: 'story',
+              },
+              style: {
+                type: 'string',
+                enum: ['consistent', 'evolving'],
+                description: 'Visual consistency across frames',
+                default: 'consistent',
+              },
+              layout: {
+                type: 'string',
+                enum: ['separate', 'grid', 'comic'],
+                description: 'Output layout format',
+                default: 'separate',
+              },
+              transition: {
+                type: 'string',
+                enum: ['smooth', 'dramatic', 'fade'],
+                description: 'Transition style between steps',
+                default: 'smooth',
+              },
+              format: {
+                type: 'string',
+                enum: ['storyboard', 'individual'],
+                description: 'Output format',
+                default: 'individual',
+              },
+              preview: {
+                type: 'boolean',
+                description:
+                  'Automatically open generated images in default viewer',
+                default: false,
+              },
+            },
+            required: ['prompt'],
+          },
+        },
+        {
+          name: 'generate_diagram',
+          description:
+            'Generate technical diagrams, flowcharts, and architectural mockups',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              prompt: {
+                type: 'string',
+                description:
+                  'Description of the diagram content and structure',
+              },
+              type: {
+                type: 'string',
+                enum: [
+                  'flowchart',
+                  'architecture',
+                  'network',
+                  'database',
+                  'wireframe',
+                  'mindmap',
+                  'sequence',
+                ],
+                description: 'Type of diagram to generate',
+                default: 'flowchart',
+              },
+              style: {
+                type: 'string',
+                enum: ['professional', 'clean', 'hand-drawn', 'technical'],
+                description: 'Visual style of the diagram',
+                default: 'professional',
+              },
+              layout: {
+                type: 'string',
+                enum: ['horizontal', 'vertical', 'hierarchical', 'circular'],
+                description: 'Layout orientation',
+                default: 'hierarchical',
+              },
+              complexity: {
+                type: 'string',
+                enum: ['simple', 'detailed', 'comprehensive'],
+                description: 'Level of detail in the diagram',
+                default: 'detailed',
+              },
+              colors: {
+                type: 'string',
+                enum: ['mono', 'accent', 'categorical'],
+                description: 'Color scheme',
+                default: 'accent',
+              },
+              annotations: {
+                type: 'string',
+                enum: ['minimal', 'detailed'],
+                description: 'Label and annotation level',
+                default: 'detailed',
+              },
+              preview: {
+                type: 'boolean',
+                description:
+                  'Automatically open generated images in default viewer',
+                default: false,
+              },
+            },
+            required: ['prompt'],
+          },
+        },
+      ];
+      console.log('Registered tools:', JSON.stringify(tools, null, 2));
       return {
-        tools: [
-          {
-            name: 'generate_image',
-            description:
-              'Generate single or multiple images from text prompts with style and variation options',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                prompt: {
-                  type: 'string',
-                  description:
-                    'The text prompt describing the image to generate',
-                },
-                outputCount: {
-                  type: 'number',
-                  description:
-                    'Number of variations to generate (1-8, default: 1)',
-                  minimum: 1,
-                  maximum: 8,
-                  default: 1,
-                },
-                styles: {
-                  type: 'array',
-                  items: { type: 'string' },
-                  description:
-                    'Array of artistic styles: photorealistic, watercolor, oil-painting, sketch, pixel-art, anime, vintage, modern, abstract, minimalist',
-                },
-                variations: {
-                  type: 'array',
-                  items: { type: 'string' },
-                  description:
-                    'Array of variation types: lighting, angle, color-palette, composition, mood, season, time-of-day',
-                },
-                format: {
-                  type: 'string',
-                  enum: ['grid', 'separate'],
-                  description:
-                    'Output format: separate files or single grid image',
-                  default: 'separate',
-                },
-                seed: {
-                  type: 'number',
-                  description: 'Seed for reproducible variations',
-                },
-                preview: {
-                  type: 'boolean',
-                  description:
-                    'Automatically open generated images in default viewer',
-                  default: false,
-                },
-              },
-              required: ['prompt'],
-            },
-          },
-          {
-            name: 'edit_image',
-            description: 'Edit an existing image based on a text prompt',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                prompt: {
-                  type: 'string',
-                  description: 'The text prompt describing the edits to make',
-                },
-                file: {
-                  type: 'string',
-                  description: 'The filename of the input image to edit',
-                },
-                preview: {
-                  type: 'boolean',
-                  description:
-                    'Automatically open generated images in default viewer',
-                  default: false,
-                },
-              },
-              required: ['prompt', 'file'],
-            },
-          },
-          {
-            name: 'restore_image',
-            description: 'Restore or enhance an existing image',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                prompt: {
-                  type: 'string',
-                  description:
-                    'The text prompt describing the restoration to perform',
-                },
-                file: {
-                  type: 'string',
-                  description: 'The filename of the input image to restore',
-                },
-                preview: {
-                  type: 'boolean',
-                  description:
-                    'Automatically open generated images in default viewer',
-                  default: false,
-                },
-              },
-              required: ['prompt', 'file'],
-            },
-          },
-          {
-            name: 'generate_icon',
-            description:
-              'Generate app icons, favicons, and UI elements in multiple sizes and formats',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                prompt: {
-                  type: 'string',
-                  description:
-                    'Description of the icon or UI element to generate',
-                },
-                sizes: {
-                  type: 'array',
-                  items: { type: 'number' },
-                  description:
-                    'Array of icon sizes in pixels (16, 32, 64, 128, 256, 512, 1024)',
-                },
-                type: {
-                  type: 'string',
-                  enum: ['app-icon', 'favicon', 'ui-element'],
-                  description: 'Type of icon to generate',
-                  default: 'app-icon',
-                },
-                style: {
-                  type: 'string',
-                  enum: ['flat', 'skeuomorphic', 'minimal', 'modern'],
-                  description: 'Visual style of the icon',
-                  default: 'modern',
-                },
-                format: {
-                  type: 'string',
-                  enum: ['png', 'jpeg'],
-                  description: 'Output format',
-                  default: 'png',
-                },
-                background: {
-                  type: 'string',
-                  description:
-                    'Background type: transparent, white, black, or color name',
-                  default: 'transparent',
-                },
-                corners: {
-                  type: 'string',
-                  enum: ['rounded', 'sharp'],
-                  description: 'Corner style for app icons',
-                  default: 'rounded',
-                },
-                preview: {
-                  type: 'boolean',
-                  description:
-                    'Automatically open generated images in default viewer',
-                  default: false,
-                },
-              },
-              required: ['prompt'],
-            },
-          },
-          {
-            name: 'generate_pattern',
-            description:
-              'Generate seamless patterns and textures for backgrounds and design elements',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                prompt: {
-                  type: 'string',
-                  description:
-                    'Description of the pattern or texture to generate',
-                },
-                size: {
-                  type: 'string',
-                  description: 'Pattern tile size (e.g., "256x256", "512x512")',
-                  default: '256x256',
-                },
-                type: {
-                  type: 'string',
-                  enum: ['seamless', 'texture', 'wallpaper'],
-                  description: 'Type of pattern to generate',
-                  default: 'seamless',
-                },
-                style: {
-                  type: 'string',
-                  enum: ['geometric', 'organic', 'abstract', 'floral', 'tech'],
-                  description: 'Pattern style',
-                  default: 'abstract',
-                },
-                density: {
-                  type: 'string',
-                  enum: ['sparse', 'medium', 'dense'],
-                  description: 'Element density in the pattern',
-                  default: 'medium',
-                },
-                colors: {
-                  type: 'string',
-                  enum: ['mono', 'duotone', 'colorful'],
-                  description: 'Color scheme',
-                  default: 'colorful',
-                },
-                repeat: {
-                  type: 'string',
-                  enum: ['tile', 'mirror'],
-                  description: 'Tiling method for seamless patterns',
-                  default: 'tile',
-                },
-                preview: {
-                  type: 'boolean',
-                  description:
-                    'Automatically open generated images in default viewer',
-                  default: false,
-                },
-              },
-              required: ['prompt'],
-            },
-          },
-          {
-            name: 'generate_story',
-            description:
-              'Generate a sequence of related images that tell a visual story or show a process',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                prompt: {
-                  type: 'string',
-                  description:
-                    'Description of the story or process to visualize',
-                },
-                steps: {
-                  type: 'number',
-                  description: 'Number of sequential images to generate (2-8)',
-                  minimum: 2,
-                  maximum: 8,
-                  default: 4,
-                },
-                type: {
-                  type: 'string',
-                  enum: ['story', 'process', 'tutorial', 'timeline'],
-                  description: 'Type of sequence to generate',
-                  default: 'story',
-                },
-                style: {
-                  type: 'string',
-                  enum: ['consistent', 'evolving'],
-                  description: 'Visual consistency across frames',
-                  default: 'consistent',
-                },
-                layout: {
-                  type: 'string',
-                  enum: ['separate', 'grid', 'comic'],
-                  description: 'Output layout format',
-                  default: 'separate',
-                },
-                transition: {
-                  type: 'string',
-                  enum: ['smooth', 'dramatic', 'fade'],
-                  description: 'Transition style between steps',
-                  default: 'smooth',
-                },
-                format: {
-                  type: 'string',
-                  enum: ['storyboard', 'individual'],
-                  description: 'Output format',
-                  default: 'individual',
-                },
-                preview: {
-                  type: 'boolean',
-                  description:
-                    'Automatically open generated images in default viewer',
-                  default: false,
-                },
-              },
-              required: ['prompt'],
-            },
-          },
-          {
-            name: 'generate_diagram',
-            description:
-              'Generate technical diagrams, flowcharts, and architectural mockups',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                prompt: {
-                  type: 'string',
-                  description:
-                    'Description of the diagram content and structure',
-                },
-                type: {
-                  type: 'string',
-                  enum: [
-                    'flowchart',
-                    'architecture',
-                    'network',
-                    'database',
-                    'wireframe',
-                    'mindmap',
-                    'sequence',
-                  ],
-                  description: 'Type of diagram to generate',
-                  default: 'flowchart',
-                },
-                style: {
-                  type: 'string',
-                  enum: ['professional', 'clean', 'hand-drawn', 'technical'],
-                  description: 'Visual style of the diagram',
-                  default: 'professional',
-                },
-                layout: {
-                  type: 'string',
-                  enum: ['horizontal', 'vertical', 'hierarchical', 'circular'],
-                  description: 'Layout orientation',
-                  default: 'hierarchical',
-                },
-                complexity: {
-                  type: 'string',
-                  enum: ['simple', 'detailed', 'comprehensive'],
-                  description: 'Level of detail in the diagram',
-                  default: 'detailed',
-                },
-                colors: {
-                  type: 'string',
-                  enum: ['mono', 'accent', 'categorical'],
-                  description: 'Color scheme',
-                  default: 'accent',
-                },
-                annotations: {
-                  type: 'string',
-                  enum: ['minimal', 'detailed'],
-                  description: 'Label and annotation level',
-                  default: 'detailed',
-                },
-                preview: {
-                  type: 'boolean',
-                  description:
-                    'Automatically open generated images in default viewer',
-                  default: false,
-                },
-              },
-              required: ['prompt'],
-            },
-          },
-        ],
+        tools,
       };
     });
 
@@ -411,6 +426,16 @@ class NanoBananaServer {
         let response;
 
         switch (name) {
+          case 'hello': {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: `Hello, ${args?.name || 'world'}!`,
+                },
+              ],
+            };
+          }
           case 'generate_image': {
             const imageRequest: ImageGenerationRequest = {
               prompt: args?.prompt as string,
