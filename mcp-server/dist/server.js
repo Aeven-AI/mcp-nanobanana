@@ -5,8 +5,15 @@
  */
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { CallToolRequestSchema, ListToolsRequestSchema, } from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema, SUPPORTED_PROTOCOL_VERSIONS, } from "@modelcontextprotocol/sdk/types.js";
+import { logger } from "./logger.js";
 import { ImageGenerator } from "./imageGenerator.js";
+const LEGACY_PROTOCOL_VERSIONS = ["0.1.0"];
+for (const legacyVersion of LEGACY_PROTOCOL_VERSIONS) {
+    if (!SUPPORTED_PROTOCOL_VERSIONS.includes(legacyVersion)) {
+        SUPPORTED_PROTOCOL_VERSIONS.push(legacyVersion);
+    }
+}
 export class NanoBananaServer {
     constructor(customGenerator) {
         this.initializationError = null;
@@ -44,7 +51,7 @@ export class NanoBananaServer {
         this.activeTransport = resolvedTransport;
         await this.server.connect(resolvedTransport);
         if (!transport) {
-            console.error("Nano Banana MCP server running on stdio");
+            logger.info("Nano Banana MCP server running on stdio");
         }
     }
     async stop() {
@@ -54,7 +61,7 @@ export class NanoBananaServer {
                 await this.activeTransport.close();
             }
             catch (error) {
-                console.error("Failed to close active transport:", error instanceof Error ? error.message : String(error));
+                logger.warn("Failed to close active transport:", error instanceof Error ? error.message : String(error));
             }
             finally {
                 this.activeTransport = undefined;
@@ -533,7 +540,7 @@ export class NanoBananaServer {
                 }
             }
             catch (error) {
-                console.error(`Error executing tool ${name}:`, error);
+                logger.error(`Error executing tool ${name}:`, error);
                 if (error instanceof Error) {
                     throw error;
                 }
@@ -587,7 +594,7 @@ export class NanoBananaServer {
     }
     setupErrorHandling() {
         this.server.onerror = (error) => {
-            console.error("[MCP Error]", error);
+            logger.error("[MCP Error]", error);
         };
         process.on("SIGINT", async () => {
             await this.stop();

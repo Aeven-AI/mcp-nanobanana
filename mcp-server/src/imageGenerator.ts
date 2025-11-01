@@ -17,6 +17,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { config as loadEnv } from "dotenv";
 import { fileURLToPath } from "url";
+import { logger } from "./logger.js";
 const execAsync = promisify(exec);
 const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
 
@@ -228,8 +229,8 @@ export class ImageGenerator {
         }
 
         if (encoded.startsWith("http")) {
-          console.error(
-            "DEBUG - Received URL in OpenRouter response; direct download not supported yet."
+          logger.debug(
+            "Ignoring URL in OpenRouter response; direct download not supported yet."
           );
           continue;
         }
@@ -262,10 +263,10 @@ export class ImageGenerator {
       }
 
       await execAsync(command);
-      console.error(`DEBUG - Opened preview for: ${filePath}`);
+      logger.debug(`Opened preview for: ${filePath}`);
     } catch (error: unknown) {
-      console.error(
-        `DEBUG - Failed to open preview for ${filePath}:`,
+      logger.warn(
+        `Failed to open preview for ${filePath}:`,
         error instanceof Error ? error.message : String(error)
       );
     }
@@ -291,15 +292,15 @@ export class ImageGenerator {
 
     if (!shouldPreview || !files.length) {
       if (files.length > 1 && request.noPreview) {
-        console.error(
-          `DEBUG - Auto-preview disabled for ${files.length} images (--no-preview specified)`
+        logger.debug(
+          `Auto-preview disabled for ${files.length} images (--no-preview specified)`
         );
       }
       return;
     }
 
-    console.error(
-      `DEBUG - ${request.preview ? "Explicit" : "Auto"}-opening ${files.length} image(s) for preview`
+    logger.debug(
+      `${request.preview ? "Explicit" : "Auto"}-opening ${files.length} image(s) for preview`
     );
 
     const previewPromises = files.map((file) => this.openImagePreview(file));
@@ -310,7 +311,7 @@ export class ImageGenerator {
     ImageGenerator.ensureAuthenticationEnv();
 
     if (process.env.MODEL_API_KEY) {
-      console.error("✓ Found MODEL_API_KEY environment variable");
+      logger.info("Found MODEL_API_KEY environment variable");
       return { apiKey: process.env.MODEL_API_KEY, keyType: "MODEL_API_KEY" };
     }
 
@@ -331,8 +332,8 @@ export class ImageGenerator {
     }
 
     if (data.length < 1000) {
-      console.error(
-        "DEBUG - Skipping short data that may not be image:",
+      logger.debug(
+        "Skipping short data that may not be image:",
         data.length,
         "characters"
       );
@@ -439,8 +440,8 @@ export class ImageGenerator {
         const value = process.env[key];
         if (value) {
           process.env.MODEL_API_KEY = value;
-          console.error(
-            `✓ Using ${key} environment variable as MODEL_API_KEY fallback`
+          logger.info(
+            `Using ${key} environment variable as MODEL_API_KEY fallback`
           );
           break;
         }
@@ -480,12 +481,12 @@ export class ImageGenerator {
       return;
     }
 
-    if (process.env[key] === undefined) {
-      process.env[key] = value;
-      if (key !== "MODEL_API_KEY") {
-        console.error(`DEBUG - Loaded ${key} from CLI arguments`);
+      if (process.env[key] === undefined) {
+        process.env[key] = value;
+        if (key !== "MODEL_API_KEY") {
+          logger.debug(`Loaded ${key} from CLI arguments`);
+        }
       }
-    }
   }
 
   private static tryLoadEnvFiles(): void {
@@ -508,16 +509,16 @@ export class ImageGenerator {
       });
 
       if (result.error) {
-        console.error(
-          `DEBUG - Failed to load environment file ${candidate}:`,
+        logger.warn(
+          `Failed to load environment file ${candidate}:`,
           result.error.message
         );
         continue;
       }
 
       if (process.env.MODEL_API_KEY) {
-        console.error(
-          `✓ Loaded MODEL_API_KEY from ${path.relative(process.cwd(), candidate)}`
+        logger.info(
+          `Loaded MODEL_API_KEY from ${path.relative(process.cwd(), candidate)}`
         );
         return;
       }
@@ -538,12 +539,12 @@ export class ImageGenerator {
       let firstError: string | null = null;
       const fileFormat = this.resolveFileFormat(request);
 
-      console.error(`DEBUG - Generating ${prompts.length} image variation(s)`);
+      logger.debug(`Generating ${prompts.length} image variation(s)`);
 
       for (let i = 0; i < prompts.length; i++) {
         const currentPrompt = prompts[i];
-        console.error(
-          `DEBUG - Generating variation ${i + 1}/${prompts.length}:`,
+        logger.debug(
+          `Generating variation ${i + 1}/${prompts.length}:`,
           currentPrompt
         );
 
@@ -588,21 +589,16 @@ export class ImageGenerator {
               filename
             );
             generatedFiles.push(fullPath);
-            console.error("DEBUG - Image saved to:", fullPath);
+            logger.debug("Image saved to:", fullPath);
           } else {
-            console.error(
-              "DEBUG - No valid image data found in OpenRouter response"
-            );
+            logger.warn("No valid image data found in OpenRouter response");
           }
         } catch (error: unknown) {
           const errorMessage = this.handleApiError(error);
           if (!firstError) {
             firstError = errorMessage;
           }
-          console.error(
-            `DEBUG - Error generating variation ${i + 1}:`,
-            errorMessage
-          );
+          logger.warn(`Error generating variation ${i + 1}:`, errorMessage);
 
           if (errorMessage.toLowerCase().includes("authentication failed")) {
             return {
@@ -632,7 +628,7 @@ export class ImageGenerator {
         generatedFiles,
       };
     } catch (error: unknown) {
-      console.error("DEBUG - Error in generateTextToImage:", error);
+      logger.error("Error in generateTextToImage:", error);
       return {
         success: false,
         message: "Failed to generate image",
@@ -669,7 +665,7 @@ export class ImageGenerator {
       const transition = args?.transition || "smooth";
       let firstError: string | null = null;
 
-      console.error(`DEBUG - Generating ${steps}-step ${type} sequence`);
+      logger.debug(`Generating ${steps}-step ${type} sequence`);
 
       for (let i = 0; i < steps; i++) {
         const stepNumber = i + 1;
@@ -697,7 +693,7 @@ export class ImageGenerator {
           stepPrompt += `, ${transition} transition from previous step`;
         }
 
-        console.error(`DEBUG - Generating step ${stepNumber}: ${stepPrompt}`);
+        logger.debug(`Generating step ${stepNumber}: ${stepPrompt}`);
 
         try {
           const payload: Record<string, unknown> = {
@@ -738,21 +734,16 @@ export class ImageGenerator {
               filename
             );
             generatedFiles.push(fullPath);
-            console.error(`DEBUG - Step ${stepNumber} saved to:`, fullPath);
+            logger.debug(`Step ${stepNumber} saved to:`, fullPath);
           } else {
-            console.error(
-              `DEBUG - No image data returned for step ${stepNumber}`
-            );
+            logger.warn(`No image data returned for step ${stepNumber}`);
           }
         } catch (error: unknown) {
           const errorMessage = this.handleApiError(error);
           if (!firstError) {
             firstError = errorMessage;
           }
-          console.error(
-            `DEBUG - Error generating step ${stepNumber}:`,
-            errorMessage
-          );
+          logger.warn(`Error generating step ${stepNumber}:`, errorMessage);
 
           if (errorMessage.toLowerCase().includes("authentication failed")) {
             return {
@@ -764,14 +755,14 @@ export class ImageGenerator {
         }
 
         if (generatedFiles.length < stepNumber) {
-          console.error(
-            `DEBUG - WARNING: Step ${stepNumber} failed to generate - no valid image data received`
+          logger.warn(
+            `Step ${stepNumber} failed to generate - no valid image data received`
           );
         }
       }
 
-      console.error(
-        `DEBUG - Story generation completed. Generated ${generatedFiles.length} out of ${steps} requested images`
+      logger.debug(
+        `Story generation completed. Generated ${generatedFiles.length} out of ${steps} requested images`
       );
 
       if (generatedFiles.length === 0) {
@@ -797,7 +788,7 @@ export class ImageGenerator {
         generatedFiles,
       };
     } catch (error: unknown) {
-      console.error("DEBUG - Error in generateStorySequence:", error);
+      logger.error("Error in generateStorySequence:", error);
       return {
         success: false,
         message: `Failed to generate ${request.mode} sequence`,
@@ -890,7 +881,7 @@ export class ImageGenerator {
         generatedFiles: [fullPath],
       };
     } catch (error: unknown) {
-      console.error(`DEBUG - Error in ${request.mode}Image:`, error);
+      logger.error(`Error in ${request.mode}Image:`, error);
       return {
         success: false,
         message: `Failed to ${request.mode} image`,

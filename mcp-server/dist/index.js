@@ -4,6 +4,7 @@
  * Copyright 2025 Aeven
  * SPDX-License-Identifier: Apache-2.0
  */
+import { logger } from "./logger.js";
 import { NanoBananaServer } from "./server.js";
 const server = new NanoBananaServer();
 const startServer = async () => {
@@ -11,14 +12,14 @@ const startServer = async () => {
         await server.start();
         const initError = server.getInitializationError();
         if (initError) {
-            console.error(`Nano Banana server started with an initialization error:`);
-            console.error(initError.message);
-            console.error("Generation tools will fail until the environment is configured correctly.");
+            logger.error(`Nano Banana server started with an initialization error:`);
+            logger.error(initError.message);
+            logger.error("Generation tools will fail until the environment is configured correctly.");
         }
     }
     catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`Failed to start Nano Banana server: ${errorMessage}`);
+        logger.error(`Failed to start Nano Banana server: ${errorMessage}`);
         process.exit(1);
     }
 };

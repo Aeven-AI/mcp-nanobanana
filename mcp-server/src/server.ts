@@ -10,7 +10,9 @@ import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  SUPPORTED_PROTOCOL_VERSIONS,
 } from "@modelcontextprotocol/sdk/types.js";
+import { logger } from "./logger.js";
 import { ImageGenerator } from "./imageGenerator.js";
 import {
   DiagramPromptArgs,
@@ -18,6 +20,14 @@ import {
   ImageGenerationRequest,
   PatternPromptArgs,
 } from "./types.js";
+
+const LEGACY_PROTOCOL_VERSIONS = ["0.1.0"];
+
+for (const legacyVersion of LEGACY_PROTOCOL_VERSIONS) {
+  if (!SUPPORTED_PROTOCOL_VERSIONS.includes(legacyVersion)) {
+    SUPPORTED_PROTOCOL_VERSIONS.push(legacyVersion);
+  }
+}
 
 export class NanoBananaServer {
   private readonly server: Server;
@@ -70,7 +80,7 @@ export class NanoBananaServer {
     await this.server.connect(resolvedTransport);
 
     if (!transport) {
-      console.error("Nano Banana MCP server running on stdio");
+      logger.info("Nano Banana MCP server running on stdio");
     }
   }
 
@@ -81,7 +91,7 @@ export class NanoBananaServer {
       try {
         await this.activeTransport.close();
       } catch (error: unknown) {
-        console.error(
+        logger.warn(
           "Failed to close active transport:",
           error instanceof Error ? error.message : String(error)
         );
@@ -603,7 +613,7 @@ export class NanoBananaServer {
           throw new Error(response.error || response.message);
         }
       } catch (error: unknown) {
-        console.error(`Error executing tool ${name}:`, error);
+        logger.error(`Error executing tool ${name}:`, error);
         if (error instanceof Error) {
           throw error;
         }
@@ -672,7 +682,7 @@ export class NanoBananaServer {
 
   private setupErrorHandling() {
     this.server.onerror = (error) => {
-      console.error("[MCP Error]", error);
+      logger.error("[MCP Error]", error);
     };
 
     process.on("SIGINT", async () => {
