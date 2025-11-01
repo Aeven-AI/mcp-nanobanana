@@ -455,7 +455,14 @@ export class NanoBananaServer {
 
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       if (this.initializationError) {
-        throw this.initializationError;
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Tool execution failed: ${this.initializationError.message}`,
+            },
+          ],
+        };
       }
 
       const { name, arguments: args } = request.params;
