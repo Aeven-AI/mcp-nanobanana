@@ -1,6 +1,6 @@
 {
   "name": "@aeven/nanobanana-mcp",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "type": "module",
   "description": "MCP server for Nano Banana image generation (OpenRouter by default, configurable provider)",
   "bin": {

@@ -16,16 +16,16 @@ const startServer = async () => {
     await server.start();
     const initError = server.getInitializationError();
     if (initError) {
-      logger.error(`Nano Banana server started with an initialization error:`);
-      logger.error(initError.message);
-      logger.error(
+      console.error(`Nano Banana server started with an initialization error:`);
+      console.error(initError.message);
+      console.error(
         "Generation tools will fail until the environment is configured correctly."
       );
     }
   } catch (error: unknown) {
     const errorMessage =
       error instanceof Error ? error.message : String(error);
-    logger.error(`Failed to start Nano Banana server: ${errorMessage}`);
+    console.error(`Failed to start Nano Banana server: ${errorMessage}`);
     process.exit(1);
   }
 };

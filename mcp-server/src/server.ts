@@ -80,7 +80,7 @@ export class NanoBananaServer {
     await this.server.connect(resolvedTransport);
 
     if (!transport) {
-      logger.info("Nano Banana MCP server running on stdio");
+      console.error("Nano Banana MCP server running on stdio");
     }
   }
 
