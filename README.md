@@ -48,13 +48,19 @@ codex mcp add nanobanana --env MODEL_API_KEY="YOUR_API_KEY_HERE" -- npx -y @aeve
 
 If you have cloned this repository to work on the code, you can register your local version.
 
-**1. Build the server:**
+**1. Install server dependencies (once per clone):**
+
+```bash
+npm run install-deps
+```
+
+**2. Build the server:**
 
 ```bash
 npm run build
 ```
 
-**2. Register with your CLI:**
+**3. Register with your CLI:**
 
 _For Codex CLI:_ (Note: The `--env` flag is required to pass the key)
 

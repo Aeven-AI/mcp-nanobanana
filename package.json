@@ -1,6 +1,6 @@
 {
   "name": "@aeven/nanobanana-mcp",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "type": "module",
   "description": "MCP server for Nano Banana image generation (OpenRouter by default, configurable provider)",
   "bin": {
@@ -30,8 +30,7 @@
     "test": "cd mcp-server && npm run test",
     "clean": "rm -rf mcp-server/dist && rm -rf node_modules",
     "preflight": "npm run clean && npm ci && npm run format && npm run lint || true && npm run build && npm run typecheck",
-    "verify:npm": "node scripts/verify-npm-distribution.mjs",
-    "postinstall": "npm run install-deps && npm run build"
+    "verify:npm": "node scripts/verify-npm-distribution.mjs"
   },
   "engines": {
     "node": ">=18.0.0"
