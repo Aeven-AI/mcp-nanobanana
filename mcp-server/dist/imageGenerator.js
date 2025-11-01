@@ -350,6 +350,7 @@ export class ImageGenerator {
             const result = loadEnv({
                 path: candidate,
                 override: false,
+                quiet: true,
             });
             if (result.error) {
                 console.error(`DEBUG - Failed to load environment file ${candidate}:`, result.error.message);
