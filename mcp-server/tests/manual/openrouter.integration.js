@@ -18,14 +18,14 @@ import { strict as assert } from 'node:assert';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { config as loadEnv } from 'dotenv';
-import { ImageGenerator } from '../dist/imageGenerator.js';
+import dotenv from 'dotenv';
+import { ImageGenerator } from '../../dist/imageGenerator.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load .env located in the mcp-server directory (if present)
-loadEnv({ path: path.resolve(__dirname, '..', '.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env'), override: true });
 
 const hasModelKey = process.env.MODEL_API_KEY;
 

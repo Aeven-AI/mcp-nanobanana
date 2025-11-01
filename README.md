@@ -11,9 +11,9 @@ A professional MCP (Model Context Protocol) extension for any MCP-compatible cli
 
 ## 📋 Prerequisites
 
-1. **MCP-compatible CLI** installed and configured (e.g., Gemini CLI, Codex CLI)
-2. **Node.js 20+** and npm
-3. **API Key**: Set `MODEL_API_KEY` (obtainable from OpenRouter or any provider that exposes the `google/gemini-2.5-flash-image` model)
+1.  **MCP-compatible CLI** installed and configured (e.g., Gemini CLI, Codex CLI)
+2.  **Node.js 20+** and npm
+3.  **API Key**: Set `MODEL_API_KEY` (obtainable from OpenRouter or any provider that exposes the `google/gemini-2.5-flash-image` model)
 
 By default, the extension talks to OpenRouter. Optional overrides are useful when targeting other providers that host the model:
 
@@ -31,15 +31,17 @@ If you are using OpenRouter, refer to their [authentication guide](https://openr
 For most users, installing via `npx` or your CLI's extension manager is the easiest method.
 
 **Gemini CLI:**
+
 ```bash
-gemini extensions install https://github.com/gemini-cli-extensions/nanobanana
+gemini extensions install https://github.com/Aeven-AI/mcp-nanobanana
 ```
 
 **Codex CLI:**
 
 The `npx` command will download and run the latest version without a local clone:
+
 ```bash
-MODEL_API_KEY="sk-..." codex mcp add nanobanana -- npx -y @aeven/nanobanana-mcp
+codex mcp add nanobanana --env MODEL_API_KEY="YOUR_API_KEY_HERE" -- npx -y @aeven/nanobanana-mcp@latest
 ```
 
 ### For Local Development
@@ -47,38 +49,94 @@ MODEL_API_KEY="sk-..." codex mcp add nanobanana -- npx -y @aeven/nanobanana-mcp
 If you have cloned this repository to work on the code, you can register your local version.
 
 **1. Build the server:**
+
 ```bash
 npm run build
 ```
 
 **2. Register with your CLI:**
 
-*For Codex CLI:*
+_For Codex CLI:_ (Note: The `--env` flag is required to pass the key)
+
 ```bash
-codex mcp add node "$(pwd)/mcp-server/dist/index.js" nanobanana
-```
-*On Windows PowerShell:*
-```powershell
-codex mcp add node "$((Get-Location).Path)\mcp-server\dist\index.js" nanobanana
+codex mcp add nanobanana --env MODEL_API_KEY="YOUR_API_KEY_HERE" -- node "$(pwd)/mcp-server/dist/index.js"
 ```
 
-*For other CLIs, adapt the path to your client's configuration file.*
+_On Windows PowerShell:_
+
+```powershell
+codex mcp add nanobanana --env MODEL_API_KEY="YOUR_API_KEY_HERE" -- node "$((Get-Location).Path)\mcp-server\dist\index.js"
+```
+
+_For other CLIs, adapt the path to your client's configuration file._
+
+## 🔑 Configuration: API Key
+
+This extension requires the `MODEL_API_KEY` environment variable to authenticate with your model provider (e.g., OpenRouter).
+
+Here are the best ways to set it:
+
+### 1\. Recommended: Shell Profile (Permanent)
+
+This method works for **all** CLIs (Gemini, Codex, etc.) by setting the variable for your entire terminal session.
+
+1.  Open your shell's profile file (e.g., `~/.zshrc`, `~/.bashrc`, or `~/.profile`).
+2.  Add the following line to the end of the file:
+    ```bash
+    export MODEL_API_KEY="YOUR_API_KEY_HERE"
+    ```
+3.  Restart your terminal for the change to take effect.
+
+### 2\. Client-Specific Configuration
+
+**For Gemini CLI (Using `.env` file):**
+
+`gemini-cli` can automatically load keys from a dedicated `.env` file.
+
+1.  Create a file (if it doesn't exist) at `~/.gemini/.env`.
+2.  Add the following line to that file:
+    ```
+    MODEL_API_KEY="YOUR_API_KEY_HERE"
+    ```
+3.  Restart `gemini-cli`.
+
+**For Codex CLI (Using `codex mcp add`):**
+
+The `codex mcp add` command has a dedicated `--env` flag to handle this for you. The command provided in the "Installation" section already includes this and is the recommended way to install.
+
+---
 
 ### Manual Registration
 
-You can also register the server by manually editing your CLI's configuration file (e.g., `~/.config/codex/mcp.json` for Codex CLI):
+You can also register the server by manually editing your CLI's configuration file.
 
-```json
+**For `codex-cli` (in `~/.codex/config.toml`):**
+
+```toml
+[mcp_servers.nanobanana]
+command = "node"
+args = ["/path/to/your/nanobanana/mcp-server/dist/index.js"]
+  [mcp_servers.nanobanana.env]
+  MODEL_API_KEY = "YOUR_API_KEY_HERE"
+```
+
+**For clients like `opencode` (in `opencode.jsonc`):**
+
+```jsonc
 {
-  "servers": {
+  "mcp": {
     "nanobanana": {
-      "command": "node",
-      "args": ["/path/to/your/nanobanana/mcp-server/dist/index.js"],
-      "env": {}
-    }
-  }
+      "type": "local",
+      "command": ["node", "/path/to/your/nanobanana/mcp-server/dist/index.js"],
+      "enabled": true,
+      "environment": {
+        "MODEL_API_KEY": "{env:MODEL_API_KEY}",
+      },
+    },
+  },
 }
 ```
+
 Restart your CLI after updating the configuration.
 
 ### Activate
@@ -103,6 +161,7 @@ The extension provides multiple command options for different use cases:
 ### 🎯 Specific Commands (Recommended)
 
 **Generate Images:**
+
 ```bash
 # Single image
 /generate "a watercolor painting of a fox in a snowy forest"
@@ -112,32 +171,38 @@ The extension provides multiple command options for different use cases:
 ```
 
 **Edit Images:**
+
 ```bash
 /edit my_photo.png "add sunglasses to the person"
 /edit portrait.jpg "change background to a beach scene" --preview
 ```
 
 **Restore Images:**
+
 ```bash
 /restore old_family_photo.jpg "remove scratches and improve clarity"
 ```
 
 **Generate Icons:**
+
 ```bash
 /icon "coffee cup logo" --sizes="64,128,256" --type="app-icon" --preview
 ```
 
 **Create Patterns:**
+
 ```bash
 /pattern "geometric triangles" --type="seamless" --style="geometric" --preview
 ```
 
 **Generate Stories:**
+
 ```bash
 /story "a seed growing into a tree" --steps=4 --type="process" --preview
 ```
 
 **Create Diagrams:**
+
 ```bash
 /diagram "user login process" --type="flowchart" --style="professional" --preview
 ```
@@ -145,6 +210,7 @@ The extension provides multiple command options for different use cases:
 ### 🌟 Natural Language Command (Flexible)
 
 **Open-ended prompts:**
+
 ```bash
 /nanobanana create a logo for my tech startup
 /nanobanana I need 5 different versions of a cat illustration in various art styles
@@ -155,19 +221,20 @@ The extension provides multiple command options for different use cases:
 
 The `/generate` command supports advanced options for creating multiple variations with different styles and parameters.
 
-<details>
-<summary>Generation Options</summary>
+\<details\>
+\<summary\>Generation Options\</summary\>
 
 **`--count=N`** - Number of variations (1-8, default: 1)
 **`--styles="style1,style2"`** - Comma-separated artistic styles
-**`--variations="var1,var2"`** - Specific variation types  
+**`--variations="var1,var2"`** - Specific variation types
 **`--format=grid|separate`** - Output format (default: separate)
 **`--seed=123`** - Seed for reproducible variations
 **`--preview`** - Automatically open generated images in default viewer
-</details>
 
-<details>
-<summary>Available Styles</summary>
+\</details\>
+
+\<details\>
+\<summary\>Available Styles\</summary\>
 
 - `photorealistic` - Photographic quality images
 - `watercolor` - Watercolor painting style
@@ -179,10 +246,11 @@ The `/generate` command supports advanced options for creating multiple variatio
 - `modern` - Contemporary/modern style
 - `abstract` - Abstract art style
 - `minimalist` - Clean, minimal design
-</details>
 
-<details>
-<summary>Available Variations</summary>
+\</details\>
+
+\<details\>
+\<summary\>Available Variations\</summary\>
 
 - `lighting` - Different lighting conditions (dramatic, soft)
 - `angle` - Various viewing angles (above, close-up)
@@ -191,17 +259,20 @@ The `/generate` command supports advanced options for creating multiple variatio
 - `mood` - Various emotional tones (cheerful, dramatic)
 - `season` - Different seasons (spring, winter)
 - `time-of-day` - Different times (sunrise, sunset)
-</details>
+
+\</details\>
 
 ### Advanced Examples
 
 **Style Variations:**
+
 ```bash
 /generate "mountain landscape" --styles="watercolor,oil-painting,sketch,photorealistic"
 # Creates the same mountain scene in 4 different artistic styles
 ```
 
 **Multiple Variations:**
+
 ```bash
 /generate "cozy coffee shop" --variations="lighting,mood" --count=4
 # Generates: dramatic lighting, soft lighting, cheerful mood, dramatic mood versions
@@ -211,8 +282,8 @@ The `/generate` command supports advanced options for creating multiple variatio
 
 The `/icon` command specializes in creating app icons, favicons, and UI elements with proper sizing and formatting.
 
-<details>
-<summary>Icon Options</summary>
+\<details\>
+\<summary\>Icon Options\</summary\>
 
 **`--sizes="16,32,64"`** - Array of icon sizes in pixels (common: 16, 32, 64, 128, 256, 512, 1024)
 **`--type="app-icon|favicon|ui-element"`** - Icon type (default: app-icon)
@@ -220,9 +291,11 @@ The `/icon` command specializes in creating app icons, favicons, and UI elements
 **`--format="png|jpeg"`** - Output format (default: png)
 **`--background="transparent|white|black|color"`** - Background type (default: transparent)
 **`--corners="rounded|sharp"`** - Corner style for app icons (default: rounded)
-</details>
+
+\</details\>
 
 ### Icon Examples
+
 ```bash
 # Complete app icon set
 /icon "productivity app with checklist" --sizes="64,128,256,512" --corners="rounded"
@@ -235,8 +308,8 @@ The `/icon` command specializes in creating app icons, favicons, and UI elements
 
 The `/pattern` command creates seamless patterns and textures perfect for backgrounds and design elements.
 
-<details>
-<summary>Pattern Options</summary>
+\<details\>
+\<summary\>Pattern Options\</summary\>
 
 **`--size="256x256"`** - Pattern tile size (common: 128x128, 256x256, 512x512)
 **`--type="seamless|texture|wallpaper"`** - Pattern type (default: seamless)
@@ -244,9 +317,11 @@ The `/pattern` command creates seamless patterns and textures perfect for backgr
 **`--density="sparse|medium|dense"`** - Element density (default: medium)
 **`--colors="mono|duotone|colorful"`** - Color scheme (default: colorful)
 **`--repeat="tile|mirror"`** - Tiling method for seamless patterns (default: tile)
-</details>
+
+\</details\>
 
 ### Pattern Examples
+
 ```bash
 # Website background pattern
 /pattern "subtle geometric hexagons" --type="seamless" --colors="duotone" --density="sparse"
@@ -259,8 +334,8 @@ The `/pattern` command creates seamless patterns and textures perfect for backgr
 
 The `/story` command generates sequential images that tell a visual story or demonstrate a step-by-step process.
 
-<details>
-<summary>Story Options</summary>
+\<details\>
+\<summary\>Story Options\</summary\>
 
 **`--steps=N`** - Number of sequential images (2-8, default: 4)
 **`--type="story|process|tutorial|timeline"`** - Sequence type (default: story)
@@ -268,9 +343,11 @@ The `/story` command generates sequential images that tell a visual story or dem
 **`--layout="separate|grid|comic"`** - Output layout (default: separate)
 **`--transition="smooth|dramatic|fade"`** - Transition style between steps (default: smooth)
 **`--format="storyboard|individual"`** - Output format (default: individual)
-</details>
+
+\</details\>
 
 ### Story Examples
+
 ```bash
 # Product development process
 /story "idea to launched product" --steps=5 --type="process" --style="consistent"
@@ -283,8 +360,8 @@ The `/story` command generates sequential images that tell a visual story or dem
 
 The `/diagram` command generates professional technical diagrams, flowcharts, and architectural mockups from simple text descriptions.
 
-<details>
-<summary>Diagram Options</summary>
+\<details\>
+\<summary\>Diagram Options\</summary\>
 
 **`--type="flowchart|architecture|network|database|wireframe|mindmap|sequence"`** - Diagram type (default: flowchart)
 **`--style="professional|clean|hand-drawn|technical"`** - Visual style (default: professional)
@@ -292,7 +369,8 @@ The `/diagram` command generates professional technical diagrams, flowcharts, an
 **`--complexity="simple|detailed|comprehensive"`** - Level of detail (default: detailed)
 **`--colors="mono|accent|categorical"`** - Color scheme (default: accent)
 **`--annotations="minimal|detailed"`** - Label and annotation level (default: detailed)
-</details>
+
+\</details\>
 
 ### Diagram Types & Use Cases
 
@@ -305,6 +383,7 @@ The `/diagram` command generates professional technical diagrams, flowcharts, an
 - **sequence**: Sequence diagrams, API interactions
 
 ### Diagram Examples
+
 ```bash
 # Development workflow
 /diagram "CI/CD pipeline with testing stages" --type="flowchart" --complexity="detailed"
@@ -334,12 +413,12 @@ If a file already exists, a counter is automatically added:
 
 For editing/restoration, the extension searches for input images in:
 
-1. Current working directory
-2. `./images/` subdirectory
-3. `./input/` subdirectory
-4. `./nanobanana-output/` subdirectory
-5. `~/Downloads/`
-6. `~/Desktop/`
+1.  Current working directory
+2.  `./images/` subdirectory
+3.  `./input/` subdirectory
+4.  `./nanobanana-output/` subdirectory
+5.  `~/Downloads/`
+6.  `~/Desktop/`
 
 ### Output Directory
 
@@ -376,22 +455,36 @@ cd mcp-server && npm run dev
 ### Tests
 
 ```bash
-# 1. Create mcp-server/.env with MODEL_API_KEY=<your key>
-# 2. Run the integration suite
+# Run the full suite (build + unit + integration)
 cd mcp-server && npm test
+
+# Only unit tests (FileHandler, ImageGenerator with mocked fetch)
+cd mcp-server && npm run test:unit
+
+# Only integration tests (in-memory MCP handshake with a stub image generator)
+cd mcp-server && npm run test:integration
 ```
 
-> **Test setup:** Ensure `mcp-server/.env` exists with a line `MODEL_API_KEY=<your key>` before running `npm test`.
+> The default integration test uses an in-memory transport and a stubbed image generator, so it runs offline and does not require an API key.
 
-The suite generates:
-- A watercolor fox scene
-- An edited and restored version of that scene
-- A two-step story sequence
-- A geometric seamless pattern
-- A user login flowchart
-- A coffee cup app icon
+To exercise the real OpenRouter workflow end-to-end, run the manual script after setting `MODEL_API_KEY`:
 
-Images are saved in `mcp-server/nanobanana-output/` for inspection (they are not deleted).
+```bash
+cd mcp-server
+MODEL_API_KEY="sk-..." node ./tests/manual/openrouter.integration.js
+```
+
+Generated assets are placed under `mcp-server/nanobanana-output/` for manual inspection.
+
+### Verify npm packaging
+
+Run the automated smoke test to make sure the published npm binary boots correctly:
+
+```bash
+npm run verify:npm
+```
+
+This command packs the project, installs the tarball in a temporary directory, launches `npx nanobanana-mcp`, and confirms the stdio server banner appears. It is safe to interrupt after the success message.
 
 ## 🔧 Technical Details
 
@@ -427,22 +520,21 @@ The extension uses the official Model Context Protocol (MCP) SDK for robust clie
 
 ### Common Issues
 
-1. **"Command not recognized"**: Verify the MCP server is registered for your CLI (e.g., `~/.gemini/extensions/nanobanana-extension/` for Gemini CLI, Codex CLI configuration for Codex users) and restart the client
+1.  **"Command not recognized"**: Verify the MCP server is registered for your CLI (e.g., `~/.gemini/extensions/nanobanana-extension/` for Gemini CLI, Codex CLI configuration for Codex users) and restart the client
 
-2. **"No API key found"**: Set the `MODEL_API_KEY` environment variable:
+2.  **"No API key found"**: Set the `MODEL_API_KEY` environment variable:
 
-   ```bash
-   export MODEL_API_KEY="your-model-provider-key"
-   ```
+    ```bash
+    export MODEL_API_KEY="your-model-provider-key"
+    ```
 
+3.  **"Build failed"**: Ensure Node.js 18+ is installed and run:
 
-3. **"Build failed"**: Ensure Node.js 18+ is installed and run:
+    ```bash
+    npm run install-deps && npm run build
+    ```
 
-   ```bash
-   npm run install-deps && npm run build
-   ```
-
-4. **"Image not found"**: Check that input files are in one of the searched directories (see File Search Locations above)
+4.  **"Image not found"**: Check that input files are in one of the searched directories (see File Search Locations above)
 
 ### Debug Mode
 
@@ -450,14 +542,14 @@ The MCP server includes detailed debug logging that appears in your CLI console 
 
 ## 📄 Legal
 
-- **License**: [Apache License 2.0](LICENSE)
+- **License**: [Apache License 2.0](https://www.google.com/search?q=LICENSE)
 - **Security**: [Security Policy](SECURITY.md)
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes in the modular architecture
-4. Run `npm run build` to ensure compilation
-5. Test with your MCP CLI (Gemini CLI, Codex CLI, etc.)
-6. Submit a pull request
+1.  Fork the repository
+2.  Create a feature branch
+3.  Make your changes in the modular architecture
+4.  Run `npm run build` to ensure compilation
+5.  Test with your MCP CLI (Gemini CLI, Codex CLI, etc.)
+6.  Submit a pull request

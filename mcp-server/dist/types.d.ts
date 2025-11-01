@@ -1,17 +1,17 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * Copyright 2025 Aeven
  * SPDX-License-Identifier: Apache-2.0
  */
 export interface ImageGenerationRequest {
     prompt: string;
     inputImage?: string;
     outputCount?: number;
-    mode: 'generate' | 'edit' | 'restore';
+    mode: "generate" | "edit" | "restore";
     styles?: string[];
     variations?: string[];
-    format?: 'grid' | 'separate';
-    fileFormat?: 'png' | 'jpeg';
+    format?: "grid" | "separate";
+    fileFormat?: "png" | "jpeg";
     seed?: number;
     preview?: boolean;
     noPreview?: boolean;
@@ -24,7 +24,7 @@ export interface ImageGenerationResponse {
 }
 export interface AuthConfig {
     apiKey: string;
-    keyType: 'MODEL_API_KEY';
+    keyType: "MODEL_API_KEY";
 }
 export interface FileSearchResult {
     found: boolean;

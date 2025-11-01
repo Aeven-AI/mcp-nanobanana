@@ -1,10 +1,11 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * Copyright 2025 Aeven
  * SPDX-License-Identifier: Apache-2.0
  */
-import { ImageGenerationRequest, ImageGenerationResponse, AuthConfig, StorySequenceArgs } from './types.js';
+import { ImageGenerationRequest, ImageGenerationResponse, AuthConfig, StorySequenceArgs } from "./types.js";
 export declare class ImageGenerator {
+    private static environmentHydrated;
     private readonly apiKey;
     private readonly baseUrl;
     private readonly modelName;
@@ -25,6 +26,10 @@ export declare class ImageGenerator {
     static validateAuthentication(): AuthConfig;
     private isValidBase64ImageData;
     private buildBatchPrompts;
+    private static ensureAuthenticationEnv;
+    private static applyEnvFromArgs;
+    private static assignEnvFromPair;
+    private static tryLoadEnvFiles;
     private resolveFileFormat;
     generateTextToImage(request: ImageGenerationRequest): Promise<ImageGenerationResponse>;
     private detectMimeType;

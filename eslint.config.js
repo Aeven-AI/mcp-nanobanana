@@ -1,36 +1,36 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * Copyright 2025 Aeven
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import prettierConfig from 'eslint-config-prettier';
-import importPlugin from 'eslint-plugin-import';
-import licenseHeader from 'eslint-plugin-license-header';
-import globals from 'globals';
+import eslint from "@eslint/js";
+import tseslint from "typescript-eslint";
+import prettierConfig from "eslint-config-prettier";
+import importPlugin from "eslint-plugin-import";
+import licenseHeader from "eslint-plugin-license-header";
+import globals from "globals";
 
 export default tseslint.config(
   {
     // Global ignores
     ignores: [
-      'node_modules/*',
-      'mcp-server/dist/**',
-      'mcp-server/node_modules/**',
-      'eslint.config.js',
+      "node_modules/*",
+      "mcp-server/dist/**",
+      "mcp-server/node_modules/**",
+      "eslint.config.js",
     ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
     // General overrides and rules for the project (TS files)
-    files: ['mcp-server/src/**/*.{ts}'],
+    files: ["mcp-server/src/**/*.{ts}"],
     plugins: {
       import: importPlugin,
     },
     settings: {
-      'import/resolver': {
+      "import/resolver": {
         node: true,
       },
     },
@@ -42,81 +42,81 @@ export default tseslint.config(
     },
     rules: {
       // General Best Practice Rules
-      '@typescript-eslint/array-type': ['error', { default: 'array-simple' }],
-      'arrow-body-style': ['error', 'as-needed'],
-      curly: ['error', 'multi-line'],
-      eqeqeq: ['error', 'always', { null: 'ignore' }],
-      '@typescript-eslint/consistent-type-assertions': [
-        'error',
-        { assertionStyle: 'as' },
+      "@typescript-eslint/array-type": ["error", { default: "array-simple" }],
+      "arrow-body-style": ["error", "as-needed"],
+      curly: ["error", "multi-line"],
+      eqeqeq: ["error", "always", { null: "ignore" }],
+      "@typescript-eslint/consistent-type-assertions": [
+        "error",
+        { assertionStyle: "as" },
       ],
-      '@typescript-eslint/explicit-member-accessibility': [
-        'error',
-        { accessibility: 'no-public' },
+      "@typescript-eslint/explicit-member-accessibility": [
+        "error",
+        { accessibility: "no-public" },
       ],
-      '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-inferrable-types': [
-        'error',
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-inferrable-types": [
+        "error",
         { ignoreParameters: true, ignoreProperties: true },
       ],
-      '@typescript-eslint/consistent-type-imports': [
-        'error',
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
         { disallowTypeAnnotations: false },
       ],
-      '@typescript-eslint/no-unused-vars': [
-        'error',
+      "@typescript-eslint/no-unused-vars": [
+        "error",
         {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
         },
       ],
-      'no-cond-assign': 'error',
-      'no-debugger': 'error',
-      'no-duplicate-case': 'error',
-      'no-restricted-syntax': [
-        'error',
+      "no-cond-assign": "error",
+      "no-debugger": "error",
+      "no-duplicate-case": "error",
+      "no-restricted-syntax": [
+        "error",
         {
           selector: 'CallExpression[callee.name="require"]',
-          message: 'Avoid using require(). Use ES6 imports instead.',
+          message: "Avoid using require(). Use ES6 imports instead.",
         },
       ],
-      'no-unsafe-finally': 'error',
-      'no-unused-expressions': 'off', // Disable base rule
-      '@typescript-eslint/no-unused-expressions': [
+      "no-unsafe-finally": "error",
+      "no-unused-expressions": "off", // Disable base rule
+      "@typescript-eslint/no-unused-expressions": [
         // Enable TS version
-        'error',
+        "error",
         { allowShortCircuit: true, allowTernary: true },
       ],
-      'no-var': 'error',
-      'object-shorthand': 'error',
-      'one-var': ['error', 'never'],
-      'prefer-arrow-callback': 'error',
-      'prefer-const': ['error', { destructuring: 'all' }],
-      radix: 'error',
-      'default-case': 'error',
-      'import/enforce-node-protocol-usage': ['error', 'always'],
+      "no-var": "error",
+      "object-shorthand": "error",
+      "one-var": ["error", "never"],
+      "prefer-arrow-callback": "error",
+      "prefer-const": ["error", { destructuring: "all" }],
+      radix: "error",
+      "default-case": "error",
+      "import/enforce-node-protocol-usage": ["error", "always"],
     },
   },
   {
     // License header enforcement for all TypeScript and JavaScript files
-    files: ['./**/*.{tsx,ts,js}'],
+    files: ["./**/*.{tsx,ts,js}"],
     plugins: {
-      'license-header': licenseHeader,
+      "license-header": licenseHeader,
     },
     rules: {
-      'license-header/header': [
-        'error',
+      "license-header/header": [
+        "error",
         [
-          '/**',
-          ' * @license',
-          ' * Copyright 2025 Google LLC',
-          ' * SPDX-License-Identifier: Apache-2.0',
-          ' */',
+          "/**",
+          " * @license",
+          " * Copyright 2025 Aeven",
+          " * SPDX-License-Identifier: Apache-2.0",
+          " */",
         ],
       ],
     },
   },
   // Prettier config must be last
-  prettierConfig,
+  prettierConfig
 );

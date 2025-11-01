@@ -1,6 +1,6 @@
 {
   "name": "@aeven/nanobanana-mcp",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
   "description": "MCP server for Nano Banana image generation (OpenRouter by default, configurable provider)",
   "bin": {
@@ -16,8 +16,7 @@
     "commands",
     "docs",
     "gemini-extension.json",
-    "mcp-server/dist",
-    "mcp-server/scripts"
+    "mcp-server/dist"
   ],
   "scripts": {
     "build": "cd mcp-server && npm run build",
@@ -31,6 +30,7 @@
     "test": "cd mcp-server && npm run test",
     "clean": "rm -rf mcp-server/dist && rm -rf node_modules",
     "preflight": "npm run clean && npm ci && npm run format && npm run lint || true && npm run build && npm run typecheck",
+    "verify:npm": "node scripts/verify-npm-distribution.mjs",
     "postinstall": "npm run install-deps && npm run build"
   },
   "engines": {
@@ -49,5 +49,12 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.2"
-  }
+  },
+  "main": "eslint.config.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

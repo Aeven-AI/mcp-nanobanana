@@ -1,19 +1,23 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * Copyright 2025 Aeven
  * SPDX-License-Identifier: Apache-2.0
  */
-import { FileHandler } from './fileHandler.js';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import * as path from 'path';
+import { FileHandler } from "./fileHandler.js";
+import { exec } from "child_process";
+import { promisify } from "util";
+import * as path from "path";
+import * as fs from "fs";
+import { config as loadEnv } from "dotenv";
+import { fileURLToPath } from "url";
 const execAsync = promisify(exec);
+const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
 class OpenRouterApiError extends Error {
     constructor(message, status, statusText) {
         super(message);
         this.status = status;
         this.statusText = statusText;
-        this.name = 'OpenRouterApiError';
+        this.name = "OpenRouterApiError";
     }
 }
 export class ImageGenerator {
@@ -21,30 +25,30 @@ export class ImageGenerator {
         this.apiKey = authConfig.apiKey;
         const env = process.env;
         this.baseUrl =
-            env.MODEL_BASE_URL?.replace(/\/$/, '') || 'https://openrouter.ai/api/v1';
-        this.modelName = env.MODEL_ID || 'google/gemini-2.5-flash-image';
+            env.MODEL_BASE_URL?.replace(/\/$/, "") || "https://openrouter.ai/api/v1";
+        this.modelName = env.MODEL_ID || "google/gemini-2.5-flash-image";
         this.referer = env.MODEL_REFERER || ImageGenerator.DEFAULT_REFERER;
-        this.title = env.MODEL_TITLE || 'Nano Banana MCP Server';
-        this.generationPath = env.MODEL_GENERATE_PATH || '/responses';
+        this.title = env.MODEL_TITLE || "Nano Banana MCP Server";
+        this.generationPath = env.MODEL_GENERATE_PATH || "/responses";
     }
     buildHeaders(kind) {
         const headers = {
             Authorization: `Bearer ${this.apiKey}`,
-            Accept: 'application/json',
+            Accept: "application/json",
         };
-        if (kind === 'json') {
-            headers['Content-Type'] = 'application/json';
+        if (kind === "json") {
+            headers["Content-Type"] = "application/json";
         }
         if (this.referer) {
-            headers['HTTP-Referer'] = this.referer;
+            headers["HTTP-Referer"] = this.referer;
         }
-        headers['X-Title'] = this.title;
+        headers["X-Title"] = this.title;
         return headers;
     }
     async postJson(pathName, body) {
         const response = await fetch(`${this.baseUrl}${pathName}`, {
-            method: 'POST',
-            headers: this.buildHeaders('json'),
+            method: "POST",
+            headers: this.buildHeaders("json"),
             body: JSON.stringify(body),
         });
         return this.handleResponse(response);
@@ -71,7 +75,7 @@ export class ImageGenerator {
         catch {
             detail = bodyText.trim();
         }
-        const prefix = `OpenRouter request failed with status ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`;
+        const prefix = `OpenRouter request failed with status ${response.status}${response.statusText ? ` ${response.statusText}` : ""}`;
         if (!detail) {
             return prefix;
         }
@@ -85,8 +89,8 @@ export class ImageGenerator {
             if (!value) {
                 return null;
             }
-            if (value.startsWith('data:image')) {
-                const commaIndex = value.indexOf(',');
+            if (value.startsWith("data:image")) {
+                const commaIndex = value.indexOf(",");
                 if (commaIndex !== -1) {
                     const base64 = value.slice(commaIndex + 1);
                     return this.isValidBase64ImageData(base64) ? base64 : null;
@@ -96,7 +100,7 @@ export class ImageGenerator {
         };
         if (response.output && response.output.length > 0) {
             for (const item of response.output) {
-                if (item.type === 'image_generation_call') {
+                if (item.type === "image_generation_call") {
                     const direct = tryDecode(item.result);
                     if (direct) {
                         return direct;
@@ -132,8 +136,8 @@ export class ImageGenerator {
                 if (!encoded) {
                     continue;
                 }
-                if (encoded.startsWith('http')) {
-                    console.error('DEBUG - Received URL in OpenRouter response; direct download not supported yet.');
+                if (encoded.startsWith("http")) {
+                    console.error("DEBUG - Received URL in OpenRouter response; direct download not supported yet.");
                     continue;
                 }
                 const legacy = tryDecode(encoded);
@@ -149,10 +153,10 @@ export class ImageGenerator {
             const platform = process.platform;
             let command;
             switch (platform) {
-                case 'darwin':
+                case "darwin":
                     command = `open "${filePath}"`;
                     break;
-                case 'win32':
+                case "win32":
                     command = `start "" "${filePath}"`;
                     break;
                 default:
@@ -183,17 +187,18 @@ export class ImageGenerator {
             }
             return;
         }
-        console.error(`DEBUG - ${request.preview ? 'Explicit' : 'Auto'}-opening ${files.length} image(s) for preview`);
+        console.error(`DEBUG - ${request.preview ? "Explicit" : "Auto"}-opening ${files.length} image(s) for preview`);
         const previewPromises = files.map((file) => this.openImagePreview(file));
         await Promise.all(previewPromises);
     }
     static validateAuthentication() {
+        ImageGenerator.ensureAuthenticationEnv();
         if (process.env.MODEL_API_KEY) {
-            console.error('✓ Found MODEL_API_KEY environment variable');
-            return { apiKey: process.env.MODEL_API_KEY, keyType: 'MODEL_API_KEY' };
+            console.error("✓ Found MODEL_API_KEY environment variable");
+            return { apiKey: process.env.MODEL_API_KEY, keyType: "MODEL_API_KEY" };
         }
-        throw new Error('ERROR: No model API key found. Please set the MODEL_API_KEY environment variable.\n' +
-            'For provider setup details, see your model host documentation (OpenRouter docs: https://openrouter.ai/docs#authenticate).');
+        throw new Error("ERROR: No model API key found. Please set the MODEL_API_KEY environment variable.\n" +
+            "For provider setup details, see your model host documentation (OpenRouter docs: https://openrouter.ai/docs#authenticate).");
     }
     isValidBase64ImageData(data) {
         if (!data || data.length < 100) {
@@ -204,7 +209,7 @@ export class ImageGenerator {
             return false;
         }
         if (data.length < 1000) {
-            console.error('DEBUG - Skipping short data that may not be image:', data.length, 'characters');
+            console.error("DEBUG - Skipping short data that may not be image:", data.length, "characters");
             return false;
         }
         return true;
@@ -226,31 +231,31 @@ export class ImageGenerator {
             for (const baseP of basePrompts) {
                 for (const variation of request.variations) {
                     switch (variation) {
-                        case 'lighting':
+                        case "lighting":
                             variationPrompts.push(`${baseP}, dramatic lighting`);
                             variationPrompts.push(`${baseP}, soft lighting`);
                             break;
-                        case 'angle':
+                        case "angle":
                             variationPrompts.push(`${baseP}, from above`);
                             variationPrompts.push(`${baseP}, close-up view`);
                             break;
-                        case 'color-palette':
+                        case "color-palette":
                             variationPrompts.push(`${baseP}, warm color palette`);
                             variationPrompts.push(`${baseP}, cool color palette`);
                             break;
-                        case 'composition':
+                        case "composition":
                             variationPrompts.push(`${baseP}, centered composition`);
                             variationPrompts.push(`${baseP}, rule of thirds composition`);
                             break;
-                        case 'mood':
+                        case "mood":
                             variationPrompts.push(`${baseP}, cheerful mood`);
                             variationPrompts.push(`${baseP}, dramatic mood`);
                             break;
-                        case 'season':
+                        case "season":
                             variationPrompts.push(`${baseP}, in spring`);
                             variationPrompts.push(`${baseP}, in winter`);
                             break;
-                        case 'time-of-day':
+                        case "time-of-day":
                             variationPrompts.push(`${baseP}, at sunrise`);
                             variationPrompts.push(`${baseP}, at sunset`);
                             break;
@@ -276,6 +281,86 @@ export class ImageGenerator {
         }
         return prompts.length > 0 ? prompts : [basePrompt];
     }
+    static ensureAuthenticationEnv() {
+        if (ImageGenerator.environmentHydrated) {
+            return;
+        }
+        ImageGenerator.environmentHydrated = true;
+        ImageGenerator.applyEnvFromArgs();
+        if (!process.env.MODEL_API_KEY) {
+            ImageGenerator.tryLoadEnvFiles();
+        }
+        if (!process.env.MODEL_API_KEY) {
+            const fallbackKeys = ["OPENROUTER_API_KEY", "OPENAI_API_KEY"];
+            for (const key of fallbackKeys) {
+                const value = process.env[key];
+                if (value) {
+                    process.env.MODEL_API_KEY = value;
+                    console.error(`✓ Using ${key} environment variable as MODEL_API_KEY fallback`);
+                    break;
+                }
+            }
+        }
+    }
+    static applyEnvFromArgs() {
+        const args = process.argv.slice(2);
+        for (let index = 0; index < args.length; index++) {
+            const arg = args[index];
+            if (arg === "--env") {
+                const assignment = args[index + 1];
+                if (assignment) {
+                    ImageGenerator.assignEnvFromPair(assignment);
+                    index++;
+                }
+            }
+            else if (arg.startsWith("--env=")) {
+                const assignment = arg.slice("--env=".length);
+                ImageGenerator.assignEnvFromPair(assignment);
+            }
+        }
+    }
+    static assignEnvFromPair(pair) {
+        const separatorIndex = pair.indexOf("=");
+        if (separatorIndex <= 0) {
+            return;
+        }
+        const key = pair.slice(0, separatorIndex).trim();
+        const value = pair.slice(separatorIndex + 1).trim();
+        if (!key || !value) {
+            return;
+        }
+        if (process.env[key] === undefined) {
+            process.env[key] = value;
+            if (key !== "MODEL_API_KEY") {
+                console.error(`DEBUG - Loaded ${key} from CLI arguments`);
+            }
+        }
+    }
+    static tryLoadEnvFiles() {
+        const searchPaths = new Set([
+            path.resolve(process.cwd(), ".env"),
+            path.resolve(process.cwd(), "mcp-server/.env"),
+            path.resolve(MODULE_DIR, "../.env"),
+            path.resolve(MODULE_DIR, "../../.env"),
+        ]);
+        for (const candidate of searchPaths) {
+            if (!fs.existsSync(candidate)) {
+                continue;
+            }
+            const result = loadEnv({
+                path: candidate,
+                override: false,
+            });
+            if (result.error) {
+                console.error(`DEBUG - Failed to load environment file ${candidate}:`, result.error.message);
+                continue;
+            }
+            if (process.env.MODEL_API_KEY) {
+                console.error(`✓ Loaded MODEL_API_KEY from ${path.relative(process.cwd(), candidate)}`);
+                return;
+            }
+        }
+    }
     resolveFileFormat(request) {
         return request.fileFormat || ImageGenerator.DEFAULT_FORMAT;
     }
@@ -295,10 +380,10 @@ export class ImageGenerator {
                         model: this.modelName,
                         input: [
                             {
-                                role: 'user',
+                                role: "user",
                                 content: [
                                     {
-                                        type: 'input_text',
+                                        type: "input_text",
                                         text: currentPrompt,
                                     },
                                 ],
@@ -311,13 +396,15 @@ export class ImageGenerator {
                     const response = await this.postJson(this.generationPath, payload);
                     const imageBase64 = this.parseImageFromResponse(response);
                     if (imageBase64) {
-                        const filename = FileHandler.generateFilename(request.styles || request.variations ? currentPrompt : request.prompt, fileFormat, i);
+                        const filename = FileHandler.generateFilename(request.styles || request.variations
+                            ? currentPrompt
+                            : request.prompt, fileFormat, i);
                         const fullPath = await FileHandler.saveImageFromBase64(imageBase64, outputPath, filename);
                         generatedFiles.push(fullPath);
-                        console.error('DEBUG - Image saved to:', fullPath);
+                        console.error("DEBUG - Image saved to:", fullPath);
                     }
                     else {
-                        console.error('DEBUG - No valid image data found in OpenRouter response');
+                        console.error("DEBUG - No valid image data found in OpenRouter response");
                     }
                 }
                 catch (error) {
@@ -326,10 +413,10 @@ export class ImageGenerator {
                         firstError = errorMessage;
                     }
                     console.error(`DEBUG - Error generating variation ${i + 1}:`, errorMessage);
-                    if (errorMessage.toLowerCase().includes('authentication failed')) {
+                    if (errorMessage.toLowerCase().includes("authentication failed")) {
                         return {
                             success: false,
-                            message: 'Image generation failed',
+                            message: "Image generation failed",
                             error: errorMessage,
                         };
                     }
@@ -338,9 +425,9 @@ export class ImageGenerator {
             if (generatedFiles.length === 0) {
                 return {
                     success: false,
-                    message: 'Failed to generate any images',
+                    message: "Failed to generate any images",
                     error: firstError ||
-                        'No image data returned from OpenRouter. Try adjusting your prompt.',
+                        "No image data returned from OpenRouter. Try adjusting your prompt.",
                 };
             }
             await this.handlePreview(generatedFiles, request);
@@ -351,10 +438,10 @@ export class ImageGenerator {
             };
         }
         catch (error) {
-            console.error('DEBUG - Error in generateTextToImage:', error);
+            console.error("DEBUG - Error in generateTextToImage:", error);
             return {
                 success: false,
-                message: 'Failed to generate image',
+                message: "Failed to generate image",
                 error: this.handleApiError(error),
             };
         }
@@ -362,15 +449,15 @@ export class ImageGenerator {
     detectMimeType(filename) {
         const ext = path.extname(filename).toLowerCase();
         switch (ext) {
-            case '.jpg':
-            case '.jpeg':
-                return 'image/jpeg';
-            case '.webp':
-                return 'image/webp';
-            case '.gif':
-                return 'image/gif';
+            case ".jpg":
+            case ".jpeg":
+                return "image/jpeg";
+            case ".webp":
+                return "image/webp";
+            case ".gif":
+                return "image/gif";
             default:
-                return 'image/png';
+                return "image/png";
         }
     }
     async generateStorySequence(request, args) {
@@ -378,25 +465,25 @@ export class ImageGenerator {
             const outputPath = FileHandler.ensureOutputDirectory();
             const generatedFiles = [];
             const steps = request.outputCount || 4;
-            const type = args?.type || 'story';
-            const style = args?.style || 'consistent';
-            const transition = args?.transition || 'smooth';
+            const type = args?.type || "story";
+            const style = args?.style || "consistent";
+            const transition = args?.transition || "smooth";
             let firstError = null;
             console.error(`DEBUG - Generating ${steps}-step ${type} sequence`);
             for (let i = 0; i < steps; i++) {
                 const stepNumber = i + 1;
                 let stepPrompt = `${request.prompt}, step ${stepNumber} of ${steps}`;
                 switch (type) {
-                    case 'story':
+                    case "story":
                         stepPrompt += `, narrative sequence, ${style} art style`;
                         break;
-                    case 'process':
+                    case "process":
                         stepPrompt += `, procedural step, instructional illustration`;
                         break;
-                    case 'tutorial':
+                    case "tutorial":
                         stepPrompt += `, tutorial step, educational diagram`;
                         break;
-                    case 'timeline':
+                    case "timeline":
                         stepPrompt += `, chronological progression, timeline visualization`;
                         break;
                     default:
@@ -412,10 +499,10 @@ export class ImageGenerator {
                         model: this.modelName,
                         input: [
                             {
-                                role: 'user',
+                                role: "user",
                                 content: [
                                     {
-                                        type: 'input_text',
+                                        type: "input_text",
                                         text: stepPrompt,
                                     },
                                 ],
@@ -428,7 +515,7 @@ export class ImageGenerator {
                     const response = await this.postJson(this.generationPath, payload);
                     const imageBase64 = this.parseImageFromResponse(response);
                     if (imageBase64) {
-                        const filename = FileHandler.generateFilename(`${type}step${stepNumber}${request.prompt}`, 'png', 0);
+                        const filename = FileHandler.generateFilename(`${type}step${stepNumber}${request.prompt}`, "png", 0);
                         const fullPath = await FileHandler.saveImageFromBase64(imageBase64, outputPath, filename);
                         generatedFiles.push(fullPath);
                         console.error(`DEBUG - Step ${stepNumber} saved to:`, fullPath);
@@ -443,10 +530,10 @@ export class ImageGenerator {
                         firstError = errorMessage;
                     }
                     console.error(`DEBUG - Error generating step ${stepNumber}:`, errorMessage);
-                    if (errorMessage.toLowerCase().includes('authentication failed')) {
+                    if (errorMessage.toLowerCase().includes("authentication failed")) {
                         return {
                             success: false,
-                            message: 'Story generation failed',
+                            message: "Story generation failed",
                             error: errorMessage,
                         };
                     }
@@ -459,9 +546,9 @@ export class ImageGenerator {
             if (generatedFiles.length === 0) {
                 return {
                     success: false,
-                    message: 'Failed to generate any story sequence images',
+                    message: "Failed to generate any story sequence images",
                     error: firstError ||
-                        'No image data returned from OpenRouter. Try adjusting your prompt.',
+                        "No image data returned from OpenRouter. Try adjusting your prompt.",
                 };
             }
             await this.handlePreview(generatedFiles, request);
@@ -476,7 +563,7 @@ export class ImageGenerator {
             };
         }
         catch (error) {
-            console.error('DEBUG - Error in generateStorySequence:', error);
+            console.error("DEBUG - Error in generateStorySequence:", error);
             return {
                 success: false,
                 message: `Failed to generate ${request.mode} sequence`,
@@ -489,8 +576,8 @@ export class ImageGenerator {
             if (!request.inputImage) {
                 return {
                     success: false,
-                    message: 'Input image file is required for editing',
-                    error: 'Missing inputImage parameter',
+                    message: "Input image file is required for editing",
+                    error: "Missing inputImage parameter",
                 };
             }
             const fileResult = FileHandler.findInputFile(request.inputImage);
@@ -498,7 +585,7 @@ export class ImageGenerator {
                 return {
                     success: false,
                     message: `Input image not found: ${request.inputImage}`,
-                    error: `Searched in: ${fileResult.searchedPaths.join(', ')}`,
+                    error: `Searched in: ${fileResult.searchedPaths.join(", ")}`,
                 };
             }
             const outputPath = FileHandler.ensureOutputDirectory();
@@ -510,10 +597,10 @@ export class ImageGenerator {
                 model: this.modelName,
                 input: [
                     {
-                        role: 'user',
+                        role: "user",
                         content: [
                             {
-                                type: 'input_text',
+                                type: "input_text",
                                 text: request.prompt,
                             },
                         ],
@@ -530,10 +617,10 @@ export class ImageGenerator {
                 return {
                     success: false,
                     message: `Failed to ${request.mode} image`,
-                    error: 'No image data returned in OpenRouter response',
+                    error: "No image data returned in OpenRouter response",
                 };
             }
-            const filename = FileHandler.generateFilename(`${request.mode}_${request.prompt}`, 'png', 0);
+            const filename = FileHandler.generateFilename(`${request.mode}_${request.prompt}`, "png", 0);
             const fullPath = await FileHandler.saveImageFromBase64(imageBase64Result, outputPath, filename);
             await this.handlePreview([fullPath], request);
             return {
@@ -555,28 +642,29 @@ export class ImageGenerator {
         if (error instanceof OpenRouterApiError) {
             const status = error.status;
             if (status === 401) {
-                return 'Authentication failed: The provided model API key is invalid. Please check your MODEL_API_KEY value.';
+                return "Authentication failed: The provided model API key is invalid. Please check your MODEL_API_KEY value.";
             }
             if (status === 403) {
-                return 'Authentication failed: Access to the requested OpenRouter resource is forbidden. Ensure your API key has access to the google/gemini-2.5-flash-image model.';
+                return "Authentication failed: Access to the requested OpenRouter resource is forbidden. Ensure your API key has access to the google/gemini-2.5-flash-image model.";
             }
             if (status === 429) {
-                return 'OpenRouter rate limit reached. Please wait a moment before retrying or review your plan limits.';
+                return "OpenRouter rate limit reached. Please wait a moment before retrying or review your plan limits.";
             }
             if (status === 400) {
                 return `The request was rejected by OpenRouter: ${error.message}`;
             }
             if (status && status >= 500) {
-                return 'OpenRouter encountered an internal error while processing the request. Please try again later.';
+                return "OpenRouter encountered an internal error while processing the request. Please try again later.";
             }
             return error.message;
         }
         const errorMessage = error instanceof Error ? error.message : String(error);
-        if (errorMessage.toLowerCase().includes('fetch failed')) {
-            return 'Network error communicating with OpenRouter. Please check your internet connection and try again.';
+        if (errorMessage.toLowerCase().includes("fetch failed")) {
+            return "Network error communicating with OpenRouter. Please check your internet connection and try again.";
         }
         return `An unexpected error occurred: ${errorMessage}`;
     }
 }
-ImageGenerator.DEFAULT_FORMAT = 'png';
-ImageGenerator.DEFAULT_REFERER = 'https://github.com/AevenAI/mcps/tree/main/nanobanana';
+ImageGenerator.environmentHydrated = false;
+ImageGenerator.DEFAULT_FORMAT = "png";
+ImageGenerator.DEFAULT_REFERER = "https://github.com/AevenAI/mcps/tree/main/nanobanana";
