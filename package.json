@@ -1,6 +1,6 @@
 {
   "name": "@aeven/nanobanana-mcp",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "description": "MCP server for Nano Banana image generation (OpenRouter by default, configurable provider)",
   "bin": {
@@ -48,7 +48,8 @@
     "typescript-eslint": "^8.30.1"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.20.2"
+    "@modelcontextprotocol/sdk": "^1.20.2",
+    "dotenv": "^17.2.3"
   },
   "main": "eslint.config.js",
   "directories": {
