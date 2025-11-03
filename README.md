@@ -44,6 +44,35 @@ The `npx` command will download and run the latest version without a local clone
 codex mcp add nanobanana --env MODEL_API_KEY="YOUR_API_KEY_HERE" -- npx -y @aeven/nanobanana-mcp@latest
 ```
 
+**Opencode CLI:**
+
+1.  Run `opencode config edit` (or open your `opencode.jsonc` settings file manually).
+2.  Register the server with an entry similar to:
+
+    ```jsonc
+    {
+      "mcp": {
+        "nanobanana": {
+          "type": "local",
+          "command": ["npx", "-y", "@aeven/nanobanana-mcp@latest"],
+          "enabled": true,
+          "environment": {
+            "MODEL_API_KEY": "{env:MODEL_API_KEY}"
+          }
+        }
+      }
+    }
+    ```
+
+3.  Save the file and restart Opencode so it picks up the new MCP server.
+
+**Claude Code:**
+
+1.  Open Claude Code and navigate to **Settings → Model Context Protocol → Add Server**.
+2.  Set the command to `npx` and the arguments to `-y` and `@aeven/nanobanana-mcp@latest`.
+3.  Add an environment variable `MODEL_API_KEY` pointing at your provider key.
+4.  Save the server configuration and restart Claude Code (or reload the window) to connect.
+
 ### For Local Development
 
 If you have cloned this repository to work on the code, you can register your local version.
@@ -541,6 +570,8 @@ The extension uses the official Model Context Protocol (MCP) SDK for robust clie
     ```
 
 4.  **"Image not found"**: Check that input files are in one of the searched directories (see File Search Locations above)
+
+5.  **`npx` install errors**: Stale directories in `~/.npm/_npx` can cause install failures. Remove the cache with `rm -rf ~/.npm/_npx/*` (or delete the directory) and rerun the install command.
 
 ### Debug Mode
 

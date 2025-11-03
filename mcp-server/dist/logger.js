@@ -3,9 +3,6 @@
  * Copyright 2025 Aeven
  * SPDX-License-Identifier: Apache-2.0
  */
-import * as fs from "node:fs";
-import * as os from "node:os";
-import * as path from "node:path";
 import { format as formatLog } from "node:util";
 const LEVEL_ORDER = {
     silent: 0,
@@ -14,10 +11,6 @@ const LEVEL_ORDER = {
     info: 3,
     debug: 4,
 };
-const LOG_FILE_ENV = process.env.NANOBANANA_LOG_FILE;
-let logFilePath;
-let logFileInitialized = false;
-let logFileWriteFailed = false;
 const normalizeLevel = (level) => {
     if (!level) {
         return null;
@@ -27,47 +20,27 @@ const normalizeLevel = (level) => {
 };
 const envLevel = normalizeLevel(process.env.NANOBANANA_LOG_LEVEL) ??
     normalizeLevel(process.env.LOG_LEVEL);
-if (LOG_FILE_ENV) {
-    logFilePath = path.resolve(LOG_FILE_ENV);
-}
 let currentLevel = envLevel ?? "error";
 const levelExplicitlySet = envLevel !== null;
 const shouldLog = (level) => {
     return LEVEL_ORDER[level] <= LEVEL_ORDER[currentLevel];
 };
-const initializeLogFile = () => {
-    if (!logFilePath || logFileInitialized || logFileWriteFailed) {
-        return;
-    }
-    try {
-        fs.mkdirSync(path.dirname(logFilePath), { recursive: true });
-        const banner = `\n=== Nano Banana log started ${new Date().toISOString()} ===${os.EOL}`;
-        fs.appendFileSync(logFilePath, banner, "utf8");
-        logFileInitialized = true;
-    }
-    catch (error) {
-        logFileWriteFailed = true;
-        const message = error instanceof Error ? error.message : String(error);
-        console.error("Failed to initialize Nano Banana log file:", message);
-    }
-};
-const appendToLogFile = (line) => {
-    if (!logFilePath || logFileWriteFailed) {
-        return;
-    }
-    if (!logFileInitialized) {
-        initializeLogFile();
-    }
-    if (!logFileInitialized) {
-        return;
-    }
-    try {
-        fs.appendFileSync(logFilePath, line + os.EOL, "utf8");
-    }
-    catch (error) {
-        logFileWriteFailed = true;
-        const message = error instanceof Error ? error.message : String(error);
-        console.error("Failed to write Nano Banana log file:", message);
+const writeToConsole = (level, line) => {
+    switch (level) {
+        case "error":
+            console.error(line);
+            break;
+        case "warn":
+            console.warn(line);
+            break;
+        case "info":
+            console.log(line);
+            break;
+        case "debug":
+            console.debug(line);
+            break;
+        default:
+            console.log(line);
     }
 };
 const output = (level, args) => {
@@ -76,8 +49,8 @@ const output = (level, args) => {
     }
     const message = formatLog(...args);
     const timestamp = new Date().toISOString();
-    appendToLogFile(`[${timestamp}] [${level.toUpperCase()}] ${message}`);
-    console.error(...args);
+    const line = `[${timestamp}] [${level.toUpperCase()}] ${message}`;
+    writeToConsole(level, line);
 };
 export const logger = {
     getLevel() {
