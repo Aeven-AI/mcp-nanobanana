@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented in this file.
 
+## 1.0.13 — 2025-11-05
+
+- Updated the `README.md` to reflect that the user will be prompted for an API key during the Gemini CLI installation.
+
 ## 1.0.12 — 2025-11-03
 
 - Switch the logger to console-only output while honoring log levels, eliminating file-system writes that broke Codex CLI sandboxes.

@@ -11,5 +11,12 @@
       "env": {}
     }
   },
-  "contextFileName": "GEMINI.md"
+  "contextFileName": "GEMINI.md",
+  "settings": [
+    {
+      "name": "API Key",
+      "description": "Your API key for the service.",
+      "envVar": "MODEL_API_KEY"
+    }
+  ]
 }

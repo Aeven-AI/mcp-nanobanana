@@ -12,8 +12,8 @@ A professional MCP (Model Context Protocol) extension for any MCP-compatible cli
 ## 📋 Prerequisites
 
 1.  **MCP-compatible CLI** installed and configured (e.g., Gemini CLI, Codex CLI)
-2.  **Node.js 20+** and npm
-3.  **API Key**: Set `MODEL_API_KEY` (obtainable from OpenRouter or any provider that exposes the `google/gemini-2.5-flash-image` model)
+2.  **Node.js 18+** and npm
+3.  **API Key**: You will need an API key from OpenRouter or another provider that hosts the `google/gemini-2.5-flash-image` model.
 
 By default, the extension talks to OpenRouter. Optional overrides are useful when targeting other providers that host the model:
 
@@ -32,13 +32,13 @@ For most users, installing via `npx` or your CLI's extension manager is the easi
 
 **Gemini CLI:**
 
+When you install the extension, you will be prompted to enter your API key.
+
 ```bash
 gemini extensions install https://github.com/Aeven-AI/mcp-nanobanana
 ```
 
 **Codex CLI:**
-
-The `npx` command will download and run the latest version without a local clone:
 
 ```bash
 codex mcp add nanobanana --env MODEL_API_KEY="YOUR_API_KEY_HERE" -- npx -y @aeven/nanobanana-mcp@latest
@@ -91,88 +91,41 @@ npm run build
 
 **3. Register with your CLI:**
 
-_For Codex CLI:_ (Note: The `--env` flag is required to pass the key)
+
+
+**For Codex CLI:**
 
 ```bash
-codex mcp add nanobanana --env MODEL_API_KEY="YOUR_API_KEY_HERE" -- node "$(pwd)/mcp-server/dist/index.js"
+
+codex mcp add nanobanana --env MODEL_API_KEY="YOUR_API_KEY_HERE" -- node mcp-server/dist/index.js
+
 ```
 
-_On Windows PowerShell:_
 
-```powershell
-codex mcp add nanobanana --env MODEL_API_KEY="YOUR_API_KEY_HERE" -- node "$((Get-Location).Path)\mcp-server\dist\index.js"
-```
 
-_For other CLIs, adapt the path to your client's configuration file._
 
-## 🔑 Configuration: API Key
 
-This extension requires the `MODEL_API_KEY` environment variable to authenticate with your model provider (e.g., OpenRouter).
+## 🔑 API Key Configuration
 
-Here are the best ways to set it:
+This extension requires a `MODEL_API_KEY` to authenticate with your model provider (e.g., OpenRouter). Here’s how to configure it for different clients:
 
-### 1\. Recommended: Shell Profile (Permanent)
+### Gemini CLI
 
-This method works for **all** CLIs (Gemini, Codex, etc.) by setting the variable for your entire terminal session.
+You will be prompted to enter your API key automatically during the installation process.
 
-1.  Open your shell's profile file (e.g., `~/.zshrc`, `~/.bashrc`, or `~/.profile`).
-2.  Add the following line to the end of the file:
-    ```bash
-    export MODEL_API_KEY="YOUR_API_KEY_HERE"
-    ```
-3.  Restart your terminal for the change to take effect.
-
-### 2\. Client-Specific Configuration
-
-**For Gemini CLI (Using `.env` file):**
-
-`gemini-cli` can automatically load keys from a dedicated `.env` file.
-
-1.  Create a file (if it doesn't exist) at `~/.gemini/.env`.
-2.  Add the following line to that file:
-    ```
-    MODEL_API_KEY="YOUR_API_KEY_HERE"
-    ```
-3.  Restart `gemini-cli`.
-
-**For Codex CLI (Using `codex mcp add`):**
+### Codex CLI
 
 The `codex mcp add` command has a dedicated `--env` flag to handle this for you. The command provided in the "Installation" section already includes this and is the recommended way to install.
 
----
+### Other CLIs (Shell Profile)
 
-### Manual Registration
+For other clients, or if you prefer to manage the key manually, you can set the `MODEL_API_KEY` as an environment variable in your shell's profile file (e.g., `~/.zshrc`, `~/.bashrc`, or `~/.profile`).
 
-You can also register the server by manually editing your CLI's configuration file.
-
-**For `codex-cli` (in `~/.codex/config.toml`):**
-
-```toml
-[mcp_servers.nanobanana]
-command = "node"
-args = ["/path/to/your/nanobanana/mcp-server/dist/index.js"]
-  [mcp_servers.nanobanana.env]
-  MODEL_API_KEY = "YOUR_API_KEY_HERE"
-```
-
-**For clients like `opencode` (in `opencode.jsonc`):**
-
-```jsonc
-{
-  "mcp": {
-    "nanobanana": {
-      "type": "local",
-      "command": ["node", "/path/to/your/nanobanana/mcp-server/dist/index.js"],
-      "enabled": true,
-      "environment": {
-        "MODEL_API_KEY": "{env:MODEL_API_KEY}",
-      },
-    },
-  },
-}
-```
-
-Restart your CLI after updating the configuration.
+1.  Add the following line to the end of the file:
+    ```bash
+    export MODEL_API_KEY="YOUR_API_KEY_HERE"
+    ```
+2.  Restart your terminal for the change to take effect.
 
 ### Activate
 
@@ -557,21 +510,13 @@ The extension uses the official Model Context Protocol (MCP) SDK for robust clie
 
 1.  **"Command not recognized"**: Verify the MCP server is registered for your CLI (e.g., `~/.gemini/extensions/nanobanana-extension/` for Gemini CLI, Codex CLI configuration for Codex users) and restart the client
 
-2.  **"No API key found"**: Set the `MODEL_API_KEY` environment variable:
+2.  **"No API key found"**: Ensure you have entered the API key correctly when prompted during installation, or that the `MODEL_API_KEY` environment variable is set correctly if you are not using Gemini CLI.
 
-    ```bash
-    export MODEL_API_KEY="your-model-provider-key"
-    ```
-
-3.  **"Build failed"**: Ensure Node.js 18+ is installed and run:
-
-    ```bash
-    npm run install-deps && npm run build
-    ```
+3.  **"Build failed"**: Ensure Node.js 18+ is installed and run `npm run install-deps && npm run build`.
 
 4.  **"Image not found"**: Check that input files are in one of the searched directories (see File Search Locations above)
 
-5.  **`npx` install errors**: Stale directories in `~/.npm/_npx` can cause install failures. Remove the cache with `rm -rf ~/.npm/_npx/*` (or delete the directory) and rerun the install command.
+5.  **`npx` install errors**: Stale directories in `~/.npm/_npx` can cause install failures. Remove the cache with `rm -rf ~/.npm/_npx/*` and rerun the install command.
 
 ### Debug Mode
 
@@ -579,7 +524,7 @@ The MCP server includes detailed debug logging that appears in your CLI console 
 
 ## 📄 Legal
 
-- **License**: [Apache License 2.0](https://www.google.com/search?q=LICENSE)
+- **License**: Apache License 2.0
 - **Security**: [Security Policy](SECURITY.md)
 
 ## 🤝 Contributing

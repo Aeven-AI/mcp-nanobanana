@@ -1,6 +1,6 @@
 {
   "name": "nanobanana-mcp-server",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "type": "module",
   "description": "MCP server for Nano Banana extension powered by OpenRouter",
   "main": "dist/index.js",
