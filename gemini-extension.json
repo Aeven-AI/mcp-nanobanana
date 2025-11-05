@@ -1,6 +1,6 @@
 {
   "name": "nanobanana",
-  "version": "1.0.4",
+  "version": "1.0.13",
   "description": "Gemini CLI extension for Nano Banana using the OpenRouter google/gemini-2.5-flash-image model - generate and manipulate images with text prompts",
   "mcpServers": {
     "nanobanana": {
